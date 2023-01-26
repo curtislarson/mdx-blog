@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strict": true,
+    "jsxFragmentFactory": "h",
+    "jsxImportSource": "preact",
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "useUnknownInCatchVariables": true,
+    "noFallthroughCasesInSwitch": true,
+    "suppressExcessPropertyErrors": true,
+    "suppressImplicitAnyIndexErrors": true
+  }
+}
