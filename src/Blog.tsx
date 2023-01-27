@@ -1,7 +1,6 @@
 /** @jsx h */
 import DefaultLayout from "./DefaultLayout.tsx";
 import {
-  deepMerge,
   mdx,
   ensureDirSync,
   resolve,
@@ -20,54 +19,33 @@ import {
   remarkGFM,
 } from "../deps.ts";
 import { createUnoCSSGenerator, UnoCSSConfig } from "./unocss.ts";
-
-export interface BuildOptions {
-  /** @default "dist" */
-  outDir?: string;
-}
-
-export interface ServerOptions extends Omit<ServeDirOptions, "fsRoot"> {}
-
-export interface BlogConfig {
-  /** @default Deno.cwd() */
-  root?: string;
-  /** @default "blog" */
-  blogDir?: string;
-  /** @default "/" */
-  base?: string;
-  /** @default "public" */
-  publicDir?: string;
-  server?: ServerOptions;
-  build?: BuildOptions;
-  css?: UnoCSSConfig;
-}
-
-type BuildConfig = ReturnType<typeof Blog["prototype"]["getBuildConfig"]>;
+import { createLexer } from "./lexer.ts";
+import { ComponentCache } from "./component-cache.ts";
+import { BlogConfig, createBlogConfig } from "./config.ts";
+import Html from "./Html.tsx";
 
 export class Blog {
-  static DEFAULT_CONFIG = {
-    root: Deno.cwd(),
-    base: "/",
-    blogDir: "blog",
-    publicDir: "public",
-    server: {},
-    build: {},
-  };
-
   readonly #cfg;
   readonly #css;
+  readonly #compileCache;
+
+  #lexer!: (source: string) => { specifier: string; absolute: string }[];
+
   constructor(config: BlogConfig) {
-    this.#cfg = deepMerge(Blog.DEFAULT_CONFIG, { ...config }) as Required<BlogConfig>;
-    this.#css = createUnoCSSGenerator(config.css);
+    this.#cfg = createBlogConfig(config);
+    this.#css = createUnoCSSGenerator(this.#cfg.css);
+    this.#compileCache = new ComponentCache(this.#cfg.mdx, this.#cfg.blogDir);
+
+    createLexer(this.#cfg.blogDir).then((l) => {
+      this.#lexer = l;
+    });
   }
 
   async build() {
-    const config = this.getBuildConfig();
-
-    ensureDirSync(config.absoluteOutDir);
+    ensureDirSync(this.#cfg.build.outDir);
 
     const manifest: string[] = [];
-    for (const entry of walkSync(config.blogDir, { exts: [".md", ".mdx"], includeDirs: false })) {
+    for (const entry of walkSync(this.#cfg.blogDir, { exts: [".md", ".mdx"], includeDirs: false })) {
       manifest.push(entry.path);
     }
 
@@ -76,14 +54,7 @@ export class Blog {
     /**
      * TODO: Don't build all the files here
      */
-    const result = await Promise.all(
-      manifest.map((filePath) =>
-        this.buildFile(filePath, config).catch((e) => {
-          console.error("Error:", e);
-          return { ok: false as const, filePath };
-        })
-      )
-    );
+    const result = await Promise.all(manifest.map((filePath) => this.buildFile(filePath)));
 
     const [okBuilds, badBuilds] = result.reduce<[string[], string[]]>(
       (acc, curr) => {
@@ -101,47 +72,41 @@ export class Blog {
     console.log(`# BAD: ${badBuilds.length}`);
   }
 
-  async buildFile(filePath: string, config: BuildConfig) {
-    const data = await Deno.readTextFile(filePath);
-    const { default: MDXContent } = await mdx.evaluate(data, {
-      ...preactRuntime,
-      outputFormat: "function-body",
-      providerImportSource: "https://esm.quack.id/@mdx-js/preact@2.1.2",
-      jsxImportSource: "https://esm.quack.id/preact@10.11.3",
-      baseUrl: `file://${config.blogDir}/`,
-      useDynamicImport: true,
-      remarkPlugins: [remarkFrontmatter as any, remarkMdxFrontmatter, remarkGFM],
-    });
+  async buildFile(filePath: string) {
+    try {
+      let data = await Deno.readTextFile(filePath);
+      const mdxImports = this.#lexer(data);
+      const fromTos = await Promise.all(
+        mdxImports.map(async (m) => ({ from: m.specifier, to: await this.#compileCache.compileToCache(m.absolute) }))
+      );
 
-    const body = renderToString(
-      <DefaultLayout>
-        <MDXContent />
-      </DefaultLayout>
-    );
-    const css = await this.#css(body);
-    const html = `
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Blog</title>
-        <style>${css}</style>
-      </head>
-      <body>
-        ${body}
-      </body>
-    </html>
-    `;
+      fromTos.forEach((ft) => (data = data.replaceAll(ft.from, ft.to)));
+      const { default: MDXContent } = await mdx.evaluate(data, {
+        ...this.#cfg.mdx,
+        baseUrl: `file://${this.#cfg.blogDir}/`,
+      });
 
-    const base = basename(filePath);
-    const outFilePath = join(config.absoluteOutDir, base.replace(/\.mdx?$/, ".html"));
-    ensureDirSync(dirname(outFilePath));
-    await Deno.writeTextFile(outFilePath, html);
+      const body = renderToString(
+        <DefaultLayout>
+          <MDXContent />
+        </DefaultLayout>
+      );
+      const css = await this.#css(body);
+      const html = renderToString(
+        <Html body={body} styles={[css]} title="Blog" meta={{ description: "Blog Description" }} />
+      );
 
-    console.log(`OK: ${outFilePath}`);
+      const outFilePath = join(this.#cfg.build.outDir, basename(filePath).replace(/\.mdx?$/, ".html"));
+      ensureDirSync(dirname(outFilePath));
+      await Deno.writeTextFile(outFilePath, `<!DOCTYPE html>${html}`);
 
-    return { ok: true as const, outFilePath };
+      console.log(`OK: ${outFilePath}`);
+
+      return { ok: true as const, outFilePath };
+    } catch (e) {
+      console.error(e);
+      return { ok: false as const, filePath };
+    }
   }
 
   async serve() {
@@ -151,13 +116,5 @@ export class Blog {
         fsRoot: this.#cfg.root,
       });
     });
-  }
-
-  getBuildConfig() {
-    return {
-      absoluteOutDir: resolve(this.#cfg.root, this.#cfg.build.outDir ?? "dist"),
-      root: this.#cfg.root,
-      blogDir: resolve(this.#cfg.root, this.#cfg.blogDir ?? "blog"),
-    };
   }
 }

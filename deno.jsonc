@@ -14,5 +14,8 @@
     "noFallthroughCasesInSwitch": true,
     "suppressExcessPropertyErrors": true,
     "suppressImplicitAnyIndexErrors": true
+  },
+  "tasks": {
+    "test": "deno run -A --unstable --no-check ./test/test-build.ts"
   }
 }
