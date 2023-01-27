@@ -1,24 +1,7 @@
 /** @jsx h */
 import DefaultLayout from "./DefaultLayout.tsx";
-import {
-  mdx,
-  ensureDirSync,
-  resolve,
-  serve,
-  serveDir,
-  ServeDirOptions,
-  walkSync,
-  basename,
-  preactRuntime,
-  join,
-  h,
-  dirname,
-  remarkFrontmatter,
-  remarkMdxFrontmatter,
-  renderToString,
-  remarkGFM,
-} from "../deps.ts";
-import { createUnoCSSGenerator, UnoCSSConfig } from "./unocss.ts";
+import { mdx, ensureDirSync, serve, walkSync, basename, join, h, dirname, renderToString } from "../deps.ts";
+import { createUnoCSSGenerator } from "./unocss.ts";
 import { createLexer } from "./lexer.ts";
 import { ComponentCache } from "./component-cache.ts";
 import { BlogConfig, createBlogConfig } from "./config.ts";
@@ -54,7 +37,7 @@ export class Blog {
     /**
      * TODO: Don't build all the files here
      */
-    const result = await Promise.all(manifest.map((filePath) => this.buildFile(filePath)));
+    const result = await Promise.all(manifest.map((filePath) => this.renderToFile(filePath)));
 
     const [okBuilds, badBuilds] = result.reduce<[string[], string[]]>(
       (acc, curr) => {
@@ -72,15 +55,18 @@ export class Blog {
     console.log(`# BAD: ${badBuilds.length}`);
   }
 
-  async buildFile(filePath: string) {
+  async renderFile(filePath: string) {
     try {
       let data = await Deno.readTextFile(filePath);
-      const mdxImports = this.#lexer(data);
-      const fromTos = await Promise.all(
-        mdxImports.map(async (m) => ({ from: m.specifier, to: await this.#compileCache.compileToCache(m.absolute) }))
+      const mdxImports = await Promise.all(
+        this.#lexer(data).map(async (m) => ({
+          from: m.specifier,
+          to: await this.#compileCache.compileToCache(m.absolute),
+        }))
       );
 
-      fromTos.forEach((ft) => (data = data.replaceAll(ft.from, ft.to)));
+      mdxImports.forEach((ft) => (data = data.replaceAll(ft.from, ft.to)));
+
       const { default: MDXContent } = await mdx.evaluate(data, {
         ...this.#cfg.mdx,
         baseUrl: `file://${this.#cfg.blogDir}/`,
@@ -95,6 +81,16 @@ export class Blog {
       const html = renderToString(
         <Html body={body} styles={[css]} title="Blog" meta={{ description: "Blog Description" }} />
       );
+      return html;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  async renderToFile(filePath: string) {
+    try {
+      const html = await this.renderFile(filePath);
 
       const outFilePath = join(this.#cfg.build.outDir, basename(filePath).replace(/\.mdx?$/, ".html"));
       ensureDirSync(dirname(outFilePath));
@@ -110,10 +106,30 @@ export class Blog {
   }
 
   async serve() {
-    return await serve((req) => {
-      return serveDir(req, {
-        ...this.#cfg.server,
-        fsRoot: this.#cfg.root,
+    return await serve(async (req) => {
+      if (req.method !== "GET") {
+        return new Response(null, { status: 404 });
+      }
+      const { pathname } = new URL(req.url);
+      if (pathname === "/favicon.ico") {
+        return new Response(null, { status: 204 });
+      }
+      const filePath = join(this.#cfg.blogDir, pathname);
+      console.log("GET", filePath);
+      const searchPaths = [`${filePath}.mdx`, `${filePath}.md`];
+      for (const path of searchPaths) {
+        try {
+          const html = await this.renderFile(path);
+          return new Response(html, {
+            headers: { "content-type": "text/html" },
+            status: 200,
+          });
+        } catch {
+          // empty
+        }
+      }
+      return new Response(null, {
+        status: 404,
       });
     });
   }

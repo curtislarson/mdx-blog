@@ -1,6 +1,10 @@
 import { mdx } from "../deps.ts";
 import { MDXConfig } from "./config.ts";
 
+/**
+ * When a `mdx` component imports another `mdx` component we need to performa an intermediary compile step to `jsx`. This
+ * cache helps keep track of which components we have previously compiled and where they are located.
+ */
 export class ComponentCache extends Map<string, Promise<string>> {
   #config;
 

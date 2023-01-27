@@ -5,15 +5,20 @@ export async function createLexer(root: string) {
   await lexer.init;
 
   return function getMdxImports(source: string) {
-    const [imps] = lexer.parse(source);
-    return imps.map((v) => {
-      if (v.n == null || !v.n.endsWith(".mdx")) {
-        return null;
-      }
-      return {
-        specifier: v.n,
-        absolute: join(root, v.n),
-      };
-    }).filter((v): v is NonNullable<typeof v> => v != null);
+    try {
+      const [imps] = lexer.parse(source);
+      return imps.map((v) => {
+        if (v.n == null || !v.n.endsWith(".mdx")) {
+          return null;
+        }
+        return {
+          specifier: v.n,
+          absolute: join(root, v.n),
+        };
+      }).filter((v): v is NonNullable<typeof v> => v != null);
+    } catch (e) {
+      console.error("creatLexer error", e);
+      throw e;
+    }
   };
 }

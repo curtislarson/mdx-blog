@@ -9,6 +9,7 @@ Build a blog with MDX support. Compile to HTML or serve on demand. Right now sti
 - [ ] Configurable layout
 - [ ] Deploy with real blog
 - [ ] Cache build files to avoid rebuilds
+- [ ] On demand render with server
 - [ ] is `compile` then `run` better than `evaluate`?
 
 ### Support importing mdx components from other mdx components
