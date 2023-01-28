@@ -18,6 +18,6 @@ export function createUnoCSSGenerator(config = defaultUnoConfig) {
   const uno = new UnoGenerator(config);
   return async (body: string) => {
     const { css } = await uno.generate(body);
-    return unoResetCSS.concat(css);
+    return [unoResetCSS, css];
   };
 }

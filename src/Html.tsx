@@ -1,12 +1,10 @@
 /** @jsx h  */
 import { h } from "../deps.ts";
+import { HtmlConfig, HtmlConfigStyles } from "./config.ts";
 
-export interface HtmlProps {
-  title: string;
-  meta?: Record<string, string | null | undefined>;
-  links?: { [key: string]: string; href: string; rel: string }[];
+export interface HtmlProps extends HtmlConfig {
   body: string;
-  styles: (string | { href?: string; text?: string; id?: string })[];
+  styles: HtmlConfigStyles;
 }
 
 export default function Html({ body, title, styles, links, meta }: HtmlProps) {
@@ -15,7 +13,7 @@ export default function Html({ body, title, styles, links, meta }: HtmlProps) {
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{title}</title>
+        {title && <title>{title}</title>}
         {meta &&
           Object.entries(meta)
             .filter(([name, content]) => !!name && !!content)

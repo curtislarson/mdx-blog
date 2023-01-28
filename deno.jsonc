@@ -16,6 +16,7 @@
     "suppressImplicitAnyIndexErrors": true
   },
   "tasks": {
-    "test": "deno run -A --unstable --no-check ./test/test-build.ts"
+    "watch": "deno run -A --unstable --no-check --watch ./test/test-server.ts",
+    "test:build": "deno run -A --unstable --no-check ./test/test-build.ts"
   }
 }

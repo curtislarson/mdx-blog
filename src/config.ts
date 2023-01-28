@@ -1,4 +1,5 @@
 import {
+  JSX,
   Pluggable,
   preactRuntime,
   remarkFrontmatter,
@@ -8,6 +9,26 @@ import {
   ServeDirOptions,
 } from "../deps.ts";
 import { UnoCSSConfig } from "./unocss.ts";
+
+export type HtmlConfigStyles = (string | { href?: string; text?: string; id?: string })[];
+
+export interface HtmlConfig {
+  title?: string;
+  meta?: Record<string, string | null | undefined>;
+  links?: { [key: string]: string; href: string; rel: string }[];
+  styles?: HtmlConfigStyles;
+  postComponent?: (props: {
+    children?: any;
+  }) => JSX.Element;
+}
+
+export interface IndexConfig {
+  header?: JSX.Element;
+  footer?: JSX.Element;
+  avatar?: string;
+  title?: string;
+  description?: string;
+}
 
 export interface ServerConfig extends Omit<ServeDirOptions, "fsRoot"> {}
 
@@ -52,7 +73,9 @@ export interface BlogConfig {
   publicDir?: string;
   server?: ServerConfig;
   build?: BuildConfig;
+  index?: IndexConfig;
   css?: UnoCSSConfig;
+  html?: HtmlConfig;
   mdx?: MDXConfig;
 }
 
