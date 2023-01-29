@@ -20,6 +20,7 @@ Build a blog with [MDX](https://mdxjs.com/). Right now still a rough work in pro
 - [x] On demand render with server
 - [ ] Handle nested `mdx` imports for `evaluate`
 - [x] Import MDX Regex will incorrectly replace examples in code blocks
-- [ ] Integrate shikisaurus
+- [ ] Support importing `tsx` components from `mdx`
+- [x] Integrate shiki
 - [ ] Support a documentation like website format
 - [ ] Basic CLI to allow operations like `init`, `New Post`, etc that can use preferred templates
