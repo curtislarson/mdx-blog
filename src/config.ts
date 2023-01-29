@@ -8,8 +8,8 @@ import {
   resolve,
   ServeDirOptions,
 } from "../deps.ts";
-import { CompileCache } from "./compile-cache.ts";
-import remarkCompileMdxImports from "./remark-compile-mdx-imports.ts";
+import { MDXCompiler } from "./mdx-compiler.ts";
+import remarkCompileMdxImports from "./remark-plugins/remark-compile-mdx-imports.ts";
 import { UnoCSSConfig } from "./unocss.ts";
 
 export type HtmlConfigStyles = (string | { href?: string; text?: string; id?: string })[];
@@ -47,6 +47,7 @@ export interface MDXConfig {
   providerImportSource?: string;
   jsxImportSource?: string;
   remarkPlugins?: Pluggable<any>[];
+  rehypePlugins?: Pluggable<any>[];
 }
 
 export const DEFAULT_MDX_CONFIG = {
@@ -55,6 +56,7 @@ export const DEFAULT_MDX_CONFIG = {
   providerImportSource: "https://esm.quack.id/@mdx-js/preact@2.1.2",
   jsxImportSource: "https://esm.quack.id/preact@10.11.3",
   remarkPlugins: [remarkFrontmatter as any, remarkMdxFrontmatter, remarkGFM],
+  rehypePlugins: [],
 };
 
 export function createMDXConfig(cfg: MDXConfig = {}, blogDir: string) {
@@ -62,7 +64,7 @@ export function createMDXConfig(cfg: MDXConfig = {}, blogDir: string) {
     ...DEFAULT_MDX_CONFIG,
     ...cfg,
   };
-  const compiler = new CompileCache(mdxConfig, blogDir);
+  const compiler = new MDXCompiler(mdxConfig, blogDir);
   mdxConfig.remarkPlugins.unshift([remarkCompileMdxImports, { compiler, root: blogDir }]);
   return mdxConfig;
 }

@@ -1,14 +1,12 @@
 import type { MdxjsEsm } from "https://esm.quack.id/mdast-util-mdx@2.0.0";
-import type { Plugin } from "https://esm.quack.id/unified@10.1.2";
-import type { ImportDeclaration } from "https://esm.quack.id/v104/@types/estree@1.0.0/index.d.ts";
-import type { Content, Root } from "https://esm.quack.id/v104/@types/mdast@3.0.10/index.d.ts";
-import { join } from "../deps.ts";
-import { CompileCache } from "./compile-cache.ts";
+import { join } from "../../deps.ts";
+import { MDXCompiler } from "../mdx-compiler.ts";
+import type { Content, ImportDeclaration, Plugin, Root } from "./types.ts";
 
-export interface MdxRewriteImportsOptions {
+export interface CompileMdxImportsOptions {
   root: string;
   /** Used to compile any mdx imports we find */
-  compiler: CompileCache;
+  compiler: MDXCompiler;
 }
 
 type RootWithMdxContent = Omit<Root, "children"> & {
@@ -20,13 +18,13 @@ type RootWithMdxContent = Omit<Root, "children"> & {
  * find any `mdx` imports, compile them to a temporary file, and replace the import with the one for
  * the temporary file.
  */
-const remarkCompileMdxImports: Plugin<[MdxRewriteImportsOptions], RootWithMdxContent> = (options) => {
+const remarkCompileMdxImports: Plugin<[CompileMdxImportsOptions], RootWithMdxContent> = (options) => {
   const { compiler } = options;
 
   function compileImportDeclaration(decl: ImportDeclaration) {
     const importSource = decl.source.value!.toString();
     const absoluteImportSource = join(options.root, importSource);
-    const compiled = compiler.compileToCacheSync(absoluteImportSource);
+    const compiled = compiler.compileToTempFile(absoluteImportSource);
     decl.source = {
       type: "Literal",
       value: compiled,
