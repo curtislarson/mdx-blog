@@ -8,6 +8,8 @@ import {
   resolve,
   ServeDirOptions,
 } from "../deps.ts";
+import { CompileCache } from "./compile-cache.ts";
+import mdxRewriteImports from "./mdx-rewrite-imports-plugin.ts";
 import { UnoCSSConfig } from "./unocss.ts";
 
 export type HtmlConfigStyles = (string | { href?: string; text?: string; id?: string })[];
@@ -55,11 +57,14 @@ export const DEFAULT_MDX_CONFIG = {
   remarkPlugins: [remarkFrontmatter as any, remarkMdxFrontmatter, remarkGFM],
 };
 
-export function createMDXConfig(cfg: MDXConfig = {}) {
-  return {
+export function createMDXConfig(cfg: MDXConfig = {}, blogDir: string) {
+  const mdxConfig = {
     ...DEFAULT_MDX_CONFIG,
     ...cfg,
   };
+  const compiler = new CompileCache(mdxConfig, blogDir);
+  mdxConfig.remarkPlugins.unshift([mdxRewriteImports, { compiler, root: blogDir }]);
+  return mdxConfig;
 }
 
 export interface BlogConfig {
@@ -98,6 +103,7 @@ export function createBlogConfig(cfg: BlogConfig) {
     ...cfg.build,
     outDir: resolve(root, cfg.build?.outDir ?? DEFAULT_CONFIG.build.outDir),
   };
+  const blogDir = resolve(root, cfg.blogDir ?? DEFAULT_CONFIG.blogDir);
   return {
     ...cfg,
     root,
@@ -106,6 +112,6 @@ export function createBlogConfig(cfg: BlogConfig) {
     publicDir: resolve(root, cfg.publicDir ?? DEFAULT_CONFIG.publicDir),
     server,
     build,
-    mdx: createMDXConfig(cfg.mdx),
+    mdx: createMDXConfig(cfg.mdx, blogDir),
   };
 }

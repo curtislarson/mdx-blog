@@ -13,8 +13,6 @@ import {
   renderToString,
 } from "../deps.ts";
 import { createUnoCSSGenerator } from "./unocss.ts";
-import { createLexer } from "./lexer.ts";
-import { ComponentCache } from "./component-cache.ts";
 import { BlogConfig, createBlogConfig } from "./config.ts";
 import Html from "./Html.tsx";
 import Index from "./components/Index.tsx";
@@ -29,15 +27,10 @@ export interface PostFrontmatter extends Record<string, unknown> {
 export class Blog {
   readonly #cfg;
   readonly #css;
-  readonly #compileCache;
-  readonly #lexer;
 
   constructor(config: BlogConfig) {
     this.#cfg = createBlogConfig(config);
     this.#css = createUnoCSSGenerator(this.#cfg.css);
-    this.#compileCache = new ComponentCache(this.#cfg.mdx, this.#cfg.blogDir);
-
-    this.#lexer = createLexer(this.#cfg.blogDir);
   }
 
   async build() {
@@ -78,18 +71,18 @@ export class Blog {
    *
    * We use a cache here as well if theres a chance we are re-using a component more than once.
    */
-  async replaceMdxImports(data: string) {
-    const mdxImports = await Promise.all(
-      this.#lexer(data).map(async (m) => ({
-        from: m.specifier,
-        to: await this.#compileCache.compileToCache(m.absolute),
-      }))
-    );
+  // async replaceMdxImports(data: string) {
+  //   const mdxImports = await Promise.all(
+  //     this.#lexer(data).map(async (m) => ({
+  //       from: m.specifier,
+  //       to: await this.#compileCache.compileToCache(m.absolute),
+  //     }))
+  //   );
 
-    mdxImports.forEach((ft) => (data = data.replaceAll(ft.from, ft.to)));
+  //   mdxImports.forEach((ft) => (data = data.replaceAll(ft.from, ft.to)));
 
-    return data;
-  }
+  //   return data;
+  // }
 
   extractFrontmatter(data: string) {
     if (frontmatter.test(data)) {
@@ -101,13 +94,11 @@ export class Blog {
 
   async renderFile(filePath: string) {
     try {
-      let data = await Deno.readTextFile(filePath);
-      data = await this.replaceMdxImports(data);
+      const data = await Deno.readTextFile(filePath);
       const meta = this.extractFrontmatter(data);
 
       const { default: MDXContent } = await mdx.evaluate(data, {
         ...this.#cfg.mdx,
-
         baseUrl: `file://${this.#cfg.blogDir}/`,
       });
 

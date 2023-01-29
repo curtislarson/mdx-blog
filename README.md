@@ -6,7 +6,8 @@ Build a blog with [MDX](https://mdxjs.com/). Right now still a rough work in pro
 
 - Serve a directory and render `mdx` files on the fly
 - Compile to html and deploy to a static host.
-- Import `mdx` or `jsx` files from other `mdx` files.
+- Import `jsx` files from `mdx` files.
+- Import `mdx` files from `mdx` files using import rewriting
 - Frontmatter support
 
 ## TODO
@@ -17,5 +18,7 @@ Build a blog with [MDX](https://mdxjs.com/). Right now still a rough work in pro
 - [ ] Cache build files to avoid rebuilds
 - [x] On demand render with server
 - [ ] Handle nested `mdx` imports for `evaluate`
+- [x] Import MDX Regex will incorrectly replace examples in code blocks
+- [ ] Integrate shikisaurus
 - [ ] Support a documentation like website format
 - [ ] Basic CLI to allow operations like `init`, `New Post`, etc that can use preferred templates

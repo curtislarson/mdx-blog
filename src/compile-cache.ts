@@ -5,7 +5,7 @@ import { MDXConfig } from "./config.ts";
  * When a `mdx` component imports another `mdx` component we need to performa an intermediary compile step to `jsx`. This
  * cache helps keep track of which components we have previously compiled and where they are located.
  */
-export class ComponentCache extends Map<string, Promise<string>> {
+export class CompileCache extends Map<string, string> {
   #config;
 
   constructor(config: MDXConfig, blogDir: string) {
@@ -17,17 +17,20 @@ export class ComponentCache extends Map<string, Promise<string>> {
     };
   }
 
-  compileToCache(sourcePath: string) {
+  compileToCacheSync(sourcePath: string) {
     const existing = this.get(sourcePath);
     if (existing != null) {
       return existing;
     }
 
+    console.log("Compile to cache", sourcePath);
+
     const outPath = Deno.makeTempFileSync() + ".jsx";
-    const p = Deno.readTextFile(sourcePath).then((content) =>
-      mdx.compile(content, this.#config).then((v) => Deno.writeTextFile(outPath, v.value)).then(() => outPath)
-    );
-    this.set(sourcePath, p);
-    return p;
+    const content = Deno.readTextFileSync(sourcePath);
+    const compiled = mdx.compileSync(content, this.#config);
+    Deno.writeTextFile(outPath, compiled.value);
+    this.set(sourcePath, outPath);
+    console.log("Compiled to outPath", outPath);
+    return outPath;
   }
 }
