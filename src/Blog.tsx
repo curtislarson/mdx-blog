@@ -16,6 +16,7 @@ import { createUnoCSSGenerator } from "./unocss.ts";
 import { BlogConfig, createBlogConfig } from "./config.ts";
 import Html from "./Html.tsx";
 import Index from "./components/Index.tsx";
+import { installShikiPlugin } from "./shiki.ts";
 
 export interface PostFrontmatter extends Record<string, unknown> {
   title?: string;
@@ -43,6 +44,7 @@ export class Blog {
 
   async build() {
     ensureDirSync(this.#cfg.build.outDir);
+    await installShikiPlugin(this.#cfg.mdx);
 
     console.log(`Collected ${this.#manifest.length} files`);
 
@@ -195,6 +197,7 @@ export class Blog {
   }
 
   async serve() {
+    await installShikiPlugin(this.#cfg.mdx);
     return await serve(async (req) => {
       if (req.method !== "GET") {
         return new Response(null, { status: 404 });

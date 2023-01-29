@@ -22,7 +22,6 @@
 .font-bold{font-weight:700;}
 .leading-8{line-height:2rem;}
 .tracking-tight{letter-spacing:-0.025em;}
-.italic{font-style:italic;}
 .text-gray-500{--un-text-opacity:1;color:rgba(107,114,128,var(--un-text-opacity));}
 .shadow-slate-700\/10{--un-shadow-color:rgba(51,65,85,0.1);}
 .shadow-xl{--un-shadow:var(--un-shadow-inset) 0 20px 25px -5px var(--un-shadow-color, rgba(0,0,0,0.1)),var(--un-shadow-inset) 0 8px 10px -6px var(--un-shadow-color, rgba(0,0,0,0.1));box-shadow:var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}
@@ -39,10 +38,7 @@
 .lg\:max-w-4xl{max-width:56rem;}
 .lg\:pb-28{padding-bottom:7rem;}
 .lg\:pt-16{padding-top:4rem;}
-}</style></head><body><div class="relative mt-5 w-full px-6 py-12 bg-white shadow-xl shadow-slate-700/10 ring-1 ring-gray-900/5 md:max-w-3xl md:mx-auto lg:max-w-4xl lg:pt-16 lg:pb-28"><h1 class="block text-3xl text-center leading-8 font-bold tracking-tight text-primary sm:text-4xl">Double MDX Import</h1><p class="mt-8 text-xl text-gray-500 leading-8">Test Double MDX Import</p><article class="text-base prose prose-truegray"><p>We should be able to import multiple MDX components</p>
-<pre class="shiki dracula" style="background-color: #282A36"><code><span class="line"><span style="color: #FF79C6">import</span><span style="color: #F8F8F2"> HelloWorld </span><span style="color: #FF79C6">from</span><span style="color: #F8F8F2"> </span><span style="color: #E9F284">&quot;</span><span style="color: #F1FA8C">../components/hello-world.mdx</span><span style="color: #E9F284">&quot;</span><span style="color: #F8F8F2">;</span></span><span class="line"><span style="color: #FF79C6">import</span><span style="color: #F8F8F2"> Button </span><span style="color: #FF79C6">from</span><span style="color: #F8F8F2"> </span><span style="color: #E9F284">&quot;</span><span style="color: #F1FA8C">../components/button.mdx</span><span style="color: #E9F284">&quot;</span><span style="color: #F8F8F2">;</span></span><span class="line"></span><span class="line"><span style="color: #F8F8F2">&lt;</span><span style="color: #8BE9FD; font-style: italic">HelloWorld</span><span style="color: #F8F8F2">/></span></span><span class="line"><span style="color: #F8F8F2">&lt;</span><span style="color: #8BE9FD; font-style: italic">Button</span><span style="color: #F8F8F2">/></span></span></code></pre>
-
-<p>Hello World</p>
-<h1>Button</h1>
-<p>Button</p>
-<button type="button">Button Text</button></article></div></body></html>
+}</style></head><body><div class="relative mt-5 w-full px-6 py-12 bg-white shadow-xl shadow-slate-700/10 ring-1 ring-gray-900/5 md:max-w-3xl md:mx-auto lg:max-w-4xl lg:pt-16 lg:pb-28"><h1 class="block text-3xl text-center leading-8 font-bold tracking-tight text-primary sm:text-4xl">Shiki Support</h1><p class="mt-8 text-xl text-gray-500 leading-8">Test Shiki Support</p><article class="text-base prose prose-truegray"><p>Shiki is nice so we want to support that</p>
+<pre class="shiki dracula" style="background-color: #282A36"><code><span class="line"><span style="color: #F8F8F2">console.</span><span style="color: #50FA7B">log</span><span style="color: #F8F8F2">(</span><span style="color: #E9F284">&quot;</span><span style="color: #F1FA8C">Hello Shiki</span><span style="color: #E9F284">&quot;</span><span style="color: #F8F8F2">);</span></span></code></pre>
+<p>Lets not forget theme customization?</p>
+<pre class="shiki nord" style="background-color: #2e3440ff"><code><span class="line"><span style="color: #D8DEE9">console</span><span style="color: #ECEFF4">.</span><span style="color: #88C0D0">log</span><span style="color: #D8DEE9FF">(</span><span style="color: #ECEFF4">&quot;</span><span style="color: #A3BE8C">Nord is nice</span><span style="color: #ECEFF4">&quot;</span><span style="color: #D8DEE9FF">)</span><span style="color: #81A1C1">;</span></span></code></pre></article></div></body></html>
