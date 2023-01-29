@@ -1,21 +1,19 @@
-import * as lexer from "https://esm.quack.id/es-module-lexer@1.1.0";
 import { join } from "../deps.ts";
 
-export async function createLexer(root: string) {
-  await lexer.init;
-
+export function createLexer(root: string) {
   return function getMdxImports(source: string) {
+    const MdxImportRe = new RegExp(`import .* from ['|"]([\\.\\/\\-$#a-zA-Z0-9]*\\.mdx)['|"];?`, "i");
     try {
-      const [imps] = lexer.parse(source);
-      return imps.map((v) => {
-        if (v.n == null || !v.n.endsWith(".mdx")) {
-          return null;
-        }
+      const arr = MdxImportRe.exec(source);
+      if (arr == null) {
+        return [];
+      }
+      return arr.slice(1).map((importStmt) => {
         return {
-          specifier: v.n,
-          absolute: join(root, v.n),
+          specifier: importStmt,
+          absolute: join(root, importStmt),
         };
-      }).filter((v): v is NonNullable<typeof v> => v != null);
+      });
     } catch (e) {
       console.error("creatLexer error", e);
       throw e;

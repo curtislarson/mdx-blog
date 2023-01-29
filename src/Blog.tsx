@@ -22,6 +22,7 @@ import Index from "./components/Index.tsx";
 export interface PostFrontmatter extends Record<string, unknown> {
   title?: string;
   preview?: string;
+  date?: string;
   tags?: string[];
 }
 
@@ -29,17 +30,14 @@ export class Blog {
   readonly #cfg;
   readonly #css;
   readonly #compileCache;
-
-  #lexer!: (source: string) => { specifier: string; absolute: string }[];
+  readonly #lexer;
 
   constructor(config: BlogConfig) {
     this.#cfg = createBlogConfig(config);
     this.#css = createUnoCSSGenerator(this.#cfg.css);
     this.#compileCache = new ComponentCache(this.#cfg.mdx, this.#cfg.blogDir);
 
-    createLexer(this.#cfg.blogDir).then((l) => {
-      this.#lexer = l;
-    });
+    this.#lexer = createLexer(this.#cfg.blogDir);
   }
 
   async build() {
@@ -73,6 +71,13 @@ export class Blog {
     console.log(`# BAD: ${badBuilds.length}`);
   }
 
+  /**
+   * `evaluate` we can only dynamically import `js` / `jsx` components so we have to run a lexer to
+   * find any `mdx` imports, compile them to a temporary file, and replace the import with the one for
+   * the temporary file.
+   *
+   * We use a cache here as well if theres a chance we are re-using a component more than once.
+   */
   async replaceMdxImports(data: string) {
     const mdxImports = await Promise.all(
       this.#lexer(data).map(async (m) => ({

@@ -221,14 +221,11 @@
     "https://deno.land/std@0.174.0/io/read_lines.ts": "baee9e35034f2fdfccf63bc24b7e3cb45aa1c1c5de26d178f7bcbc572e87772f",
     "https://deno.land/std@0.174.0/io/read_string_delim.ts": "46eb0c9db3547caf8c759631effa200bbe48924f9b34f41edc627bde36cee52d",
     "https://deno.land/std@0.174.0/types.d.ts": "220ed56662a0bd393ba5d124aa6ae2ad36a00d2fcbc0e8666a65f4606aaa9784",
-    "https://deno.land/x/htm@0.1.3/html.tsx": "b1c1e8ff8af45dbdf4dd6d90dea37ff8e9c86c705f672f9b53911691ed12e6fd",
-    "https://deno.land/x/htm@0.1.3/mod.ts": "93485a06c930907a40f09eb8d9deadf27aaaa228c5037a24be7a08b82c8b4bee",
     "https://esm.quack.id/@mdx-js/mdx@2.2.1": "e5e0822e3344ff3f6668e19727d7bb9dd7cee3d689216a8c6e44118d07e63599",
     "https://esm.quack.id/@mdx-js/preact@2.1.2": "351aa5af0e0d2091cf1135a00e12148a83862e574850c2e6fb652f6345bc7b98",
     "https://esm.quack.id/@unocss/core@0.49.0": "58072ca12e72f8d5e150b55a90576114dbf1df3c8ed45436b0b8ff780f3d8cbb",
     "https://esm.quack.id/@unocss/preset-typography@0.49.0?bundle&no-check": "d5579f6d4d63a7d35b036803b8e7648b2d6e8ba9b5a5cb66d5defecb98b6e80e",
     "https://esm.quack.id/@unocss/preset-wind@0.49.0?bundle&no-check": "8bc927bc819158b69fd00f296f8c5edf39f0309470094fd04bf4869d5759edfa",
-    "https://esm.quack.id/es-module-lexer@1.1.0": "0555f3fa435376549b533ea21618b99cb69f6b0c62d56367197ddecb557df42a",
     "https://esm.quack.id/preact-render-to-string@5.2.6": "a9fcba44def558d2caf49be01169d7bdeb17fd8d08814664fd23044631bd78ca",
     "https://esm.quack.id/preact@10.11.3": "14318f818eb65f06cda8085b7ed8faf0fcf1e24142c896afb10d6df8c2543732",
     "https://esm.quack.id/preact@10.11.3/jsx-runtime": "2e7736fdf1602b1f9ad07fe82f7c8f41cfc3111fd95a489c1f9381093f32376e",
@@ -279,8 +276,6 @@
     "https://esm.quack.id/v104/comma-separated-tokens@2.0.3/deno/comma-separated-tokens.js": "0a876bf6a6dd11588e10e814b8c27fa756d978277000d4a2baeb339a1d6fe714",
     "https://esm.quack.id/v104/csstype@3.1.1/index.d.ts": "1c29793071152b207c01ea1954e343be9a44d85234447b2b236acae9e709a383",
     "https://esm.quack.id/v104/decode-named-character-reference@1.0.2/deno/decode-named-character-reference.js": "5d36dda434ba08a9d1f8f988170a5a5eb55f737e8af84b4bfd6ac1bff60d649f",
-    "https://esm.quack.id/v104/es-module-lexer@1.1.0/deno/es-module-lexer.js": "289c80d8d71028082e9f9216a2ba03c3077a72f8021ed50d202aaa2d30751c90",
-    "https://esm.quack.id/v104/es-module-lexer@1.1.0/types/lexer.d.ts": "17e0e434f11c67ca045878f6785d0ec06c82f46e5c66a5c96b13d9cc13d58c91",
     "https://esm.quack.id/v104/escape-string-regexp@5.0.0/deno/escape-string-regexp.js": "75a81e47dd2b72b3946cb9f036e1a43d7d42cdbdfc634443ba5363035c959b9c",
     "https://esm.quack.id/v104/estree-util-attach-comments@2.1.1/deno/estree-util-attach-comments.js": "e0e86210294bf13069df717ddee74d50522d598e6d8ef18839ea8b576dbed709",
     "https://esm.quack.id/v104/estree-util-build-jsx@2.2.2/deno/estree-util-build-jsx.js": "5260504ad1902aac03fcd2c67f01ad6acb7864cc0e86f05e19d2aefe9f077754",
@@ -493,13 +488,6 @@
     "https://esm.quack.id/v104/vfile@5.3.6/lib/minurl.shared.d.ts": "3706ce5f7daa3461e02dd6dc33083b8e22cb9691e9348b8e481a5d049e62d897",
     "https://esm.quack.id/v104/yaml@2.2.1/deno/yaml.js": "2d03567207bea6eb3b5cd212300f6c62b9b1f6e51efb29f045017e72ba12ecc3",
     "https://esm.quack.id/v104/zwitch@2.0.4/deno/zwitch.js": "c155a8dcd1a70f4c6083046c644d1747c3c3d1858a738fe6f359c5e8e424f82f",
-    "https://esm.quack.id/vfile@5.3.6": "d32e2f7f8d46643814b7ad514fda7d38e2ca0744e7f7c1815251b29e20b35293",
-    "https://esm.sh/preact-render-to-string@5.2.6?deps=preact@10.11.2": "3009797220b4815bb0b2867600f1bcb63425918faad664f1699a7c581807d201",
-    "https://esm.sh/preact@10.11.2": "a7484db8d718104c029053f08954ed862f15b2a1440867a4eb63a3a78e7749c7",
-    "https://esm.sh/stable/preact@10.11.2/deno/preact.js": "10e7be6ea2698598105f404198789d8a34fd6a1ca020482f94eaaaca736badf5",
-    "https://esm.sh/v104/preact-render-to-string@5.2.6/X-ZC9wcmVhY3RAMTAuMTEuMg/deno/preact-render-to-string.js": "0554ba3b539a1fd09d6f751b2b0ad54fddf4fbf6c76386a02c6407c01ab1653d",
-    "https://esm.sh/v104/preact-render-to-string@5.2.6/X-ZC9wcmVhY3RAMTAuMTEuMg/src/index.d.ts": "fcb69bcee156b587fbce71357db13e37611ffec804cab51bc4688028f8a07b7c",
-    "https://esm.sh/v104/preact@10.11.2/src/index.d.ts": "76842a9d103548261ee001f2aee5fa5cacc8b1b4b4032af537ed84603c8f4a31",
-    "https://esm.sh/v104/preact@10.11.2/src/jsx.d.ts": "77ce5bd7324455c9f6dc85bfc3c94b733acb92cc98fdf82e4b1059c8bca7866d"
+    "https://esm.quack.id/vfile@5.3.6": "d32e2f7f8d46643814b7ad514fda7d38e2ca0744e7f7c1815251b29e20b35293"
   }
 }

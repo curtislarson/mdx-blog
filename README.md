@@ -1,6 +1,13 @@
 # mdx-blog (WIP)
 
-Build a blog with MDX support. Compile to HTML or serve on demand. Right now still a rough work in progress.
+Build a blog with [MDX](https://mdxjs.com/). Right now still a rough work in progress.
+
+## Features
+
+- Serve a directory and render `mdx` files on the fly
+- Compile to html and deploy to a static host.
+- Import `mdx` or `jsx` files from other `mdx` files.
+- Frontmatter support
 
 ## TODO
 
@@ -9,15 +16,6 @@ Build a blog with MDX support. Compile to HTML or serve on demand. Right now sti
 - [ ] Deploy with real blog
 - [ ] Cache build files to avoid rebuilds
 - [x] On demand render with server
-
-### Support importing mdx components from other mdx components
-
-Since we can dynamically import js components this should be possible although its a bit tricky right now since we are converting it straight to html.
-
-1. Run esm lexer on file to detect any `.mdx` imports
-2. For each of the detected imports we determine it's absolute path based on where it was imported from
-3. If that path exists in the cache, we return the cached value.
-4. If path does not exists we compile the `.mdx` component and save it to a temporary file, storing that path in the hashmap
-5. The import specifiers from `#2` are rewritten to these temporary paths
-
-NOTE: We need to handle nested
+- [ ] Handle nested `mdx` imports for `evaluate`
+- [ ] Support a documentation like website format
+- [ ] Basic CLI to allow operations like `init`, `New Post`, etc that can use preferred templates
