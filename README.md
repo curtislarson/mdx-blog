@@ -16,6 +16,7 @@ Build a blog with [MDX](https://mdxjs.com/). Right now still a rough work in pro
 - [x] Configurable layout
 - [ ] Deploy with real blog
 - [ ] Cache build files to avoid rebuilds
+- [ ] Serve shouldn't have to save cache files to local file store
 - [x] On demand render with server
 - [ ] Handle nested `mdx` imports for `evaluate`
 - [x] Import MDX Regex will incorrectly replace examples in code blocks

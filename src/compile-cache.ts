@@ -18,17 +18,18 @@ export class CompileCache extends Map<string, string> {
   }
 
   compileToCacheSync(sourcePath: string) {
+    console.log("Compiling MDX file:", sourcePath);
+
     const existing = this.get(sourcePath);
     if (existing != null) {
+      console.log("Path exists in cache: ", sourcePath);
       return existing;
     }
-
-    console.log("Compile to cache", sourcePath);
 
     const outPath = Deno.makeTempFileSync() + ".jsx";
     const content = Deno.readTextFileSync(sourcePath);
     const compiled = mdx.compileSync(content, this.#config);
-    Deno.writeTextFile(outPath, compiled.value);
+    Deno.writeTextFileSync(outPath, compiled.value);
     this.set(sourcePath, outPath);
     console.log("Compiled to outPath", outPath);
     return outPath;

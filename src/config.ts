@@ -9,7 +9,7 @@ import {
   ServeDirOptions,
 } from "../deps.ts";
 import { CompileCache } from "./compile-cache.ts";
-import mdxRewriteImports from "./mdx-rewrite-imports-plugin.ts";
+import remarkCompileMdxImports from "./remark-compile-mdx-imports.ts";
 import { UnoCSSConfig } from "./unocss.ts";
 
 export type HtmlConfigStyles = (string | { href?: string; text?: string; id?: string })[];
@@ -63,7 +63,7 @@ export function createMDXConfig(cfg: MDXConfig = {}, blogDir: string) {
     ...cfg,
   };
   const compiler = new CompileCache(mdxConfig, blogDir);
-  mdxConfig.remarkPlugins.unshift([mdxRewriteImports, { compiler, root: blogDir }]);
+  mdxConfig.remarkPlugins.unshift([remarkCompileMdxImports, { compiler, root: blogDir }]);
   return mdxConfig;
 }
 

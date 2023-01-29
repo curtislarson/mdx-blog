@@ -24,29 +24,32 @@ export interface PostFrontmatter extends Record<string, unknown> {
   tags?: string[];
 }
 
+interface ManifestEntry {
+  filePath: string;
+  stat: Deno.FileInfo;
+}
+
 export class Blog {
   readonly #cfg;
   readonly #css;
 
+  #manifest;
+
   constructor(config: BlogConfig) {
     this.#cfg = createBlogConfig(config);
     this.#css = createUnoCSSGenerator(this.#cfg.css);
+    this.#manifest = this.refreshManifest();
   }
 
   async build() {
     ensureDirSync(this.#cfg.build.outDir);
 
-    const manifest: string[] = [];
-    for (const entry of walkSync(this.#cfg.blogDir, { exts: [".md", ".mdx"], includeDirs: false })) {
-      manifest.push(entry.path);
-    }
-
-    console.log(`Collected ${manifest.length} files`);
+    console.log(`Collected ${this.#manifest.length} files`);
 
     /**
      * TODO: Don't build all the files here
      */
-    const result = await Promise.all(manifest.map((filePath) => this.renderAndWriteToFile(filePath)));
+    const result = await Promise.all(this.#manifest.map(({ filePath }) => this.renderAndWriteToFile(filePath)));
 
     const [okBuilds, badBuilds] = result.reduce<[string[], string[]]>(
       (acc, curr) => {
@@ -64,25 +67,14 @@ export class Blog {
     console.log(`# BAD: ${badBuilds.length}`);
   }
 
-  /**
-   * `evaluate` we can only dynamically import `js` / `jsx` components so we have to run a lexer to
-   * find any `mdx` imports, compile them to a temporary file, and replace the import with the one for
-   * the temporary file.
-   *
-   * We use a cache here as well if theres a chance we are re-using a component more than once.
-   */
-  // async replaceMdxImports(data: string) {
-  //   const mdxImports = await Promise.all(
-  //     this.#lexer(data).map(async (m) => ({
-  //       from: m.specifier,
-  //       to: await this.#compileCache.compileToCache(m.absolute),
-  //     }))
-  //   );
-
-  //   mdxImports.forEach((ft) => (data = data.replaceAll(ft.from, ft.to)));
-
-  //   return data;
-  // }
+  refreshManifest(): ManifestEntry[] {
+    const manifest: ManifestEntry[] = [];
+    for (const entry of walkSync(this.#cfg.blogDir, { exts: [".md", ".mdx"], includeDirs: false })) {
+      const stat = Deno.statSync(entry.path);
+      manifest.push({ stat, filePath: entry.path });
+    }
+    return manifest;
+  }
 
   extractFrontmatter(data: string) {
     if (frontmatter.test(data)) {
@@ -121,7 +113,7 @@ export class Blog {
       );
       return html;
     } catch (e) {
-      console.error(e);
+      console.error("Error in renderFile", e);
       throw e;
     }
   }
@@ -144,6 +136,12 @@ export class Blog {
   }
 
   async renderIndex() {
+    if (this.#manifest.length === 0) {
+      this.#manifest = this.refreshManifest();
+    }
+
+    const mostRecent = this.getMostRecentPosts();
+
     const body = renderToString(
       <Index
         avatar={this.#cfg.index?.avatar}
@@ -151,7 +149,7 @@ export class Blog {
         title={this.#cfg.index?.title ?? this.#cfg.html?.title}
         footer={this.#cfg.index?.footer}
         header={this.#cfg.index?.header}
-        posts={[]}
+        posts={mostRecent}
       />
     );
     const css = await this.#css(body);
@@ -165,6 +163,35 @@ export class Blog {
       />
     );
     return html;
+  }
+
+  /**
+   * We could go off of file stat metrics like creation time or last edit time.
+   * Also could use more expensive frontmatter or filename heuristics
+   */
+  getMostRecentPosts(topN: number = 5) {
+    const top = this.#manifest.sort((a, b) => {
+      if (a.stat.birthtime) {
+        return b.stat.birthtime ? (b.stat.birthtime > a.stat.birthtime ? 1 : -1) : -1;
+      } else if (b.stat.birthtime) {
+        return 1;
+      }
+      return 0;
+    });
+    return top.slice(0, topN).map((t) => {
+      const data = Deno.readTextFileSync(t.filePath);
+      const frontmatter = this.extractFrontmatter(data);
+      const dateOrBirth = frontmatter?.attrs.date ?? t.stat.birthtime;
+      return {
+        ...t,
+        title: frontmatter?.attrs.title ?? basename(t.filePath),
+        href: t.filePath.replace(this.#cfg.blogDir, "").replace(/\.mdx?$/, ""),
+        preview: frontmatter?.attrs.preview,
+        tags: frontmatter?.attrs.tags,
+        date: dateOrBirth ? new Date(dateOrBirth) : undefined,
+        frontmatter,
+      };
+    });
   }
 
   async serve() {
