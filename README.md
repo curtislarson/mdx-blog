@@ -9,6 +9,7 @@ Build a blog with [MDX](https://mdxjs.com/). Right now still a rough work in pro
 - Import `jsx` files from `mdx` files.
 - Import `mdx` files from `mdx` files using import rewriting
 - Frontmatter support
+- [shiki](https://github.com/shikijs/shiki) support
 
 ## TODO
 

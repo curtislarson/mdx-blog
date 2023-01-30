@@ -10,6 +10,7 @@ import {
 } from "../deps.ts";
 import { MDXCompiler } from "./mdx-compiler.ts";
 import remarkCompileMdxImports from "./remark-plugins/remark-compile-mdx-imports.ts";
+import { createShikiConfig, ShikiConfig } from "./shiki.ts";
 import { UnoCSSConfig } from "./unocss.ts";
 
 export type HtmlConfigStyles = (string | { href?: string; text?: string; id?: string })[];
@@ -59,14 +60,18 @@ export const DEFAULT_MDX_CONFIG = {
   rehypePlugins: [],
 };
 
-export function createMDXConfig(cfg: MDXConfig = {}, blogDir: string) {
+export function createMDXConfig(cfg: MDXConfig = {}) {
   const mdxConfig = {
     ...DEFAULT_MDX_CONFIG,
     ...cfg,
   };
-  const compiler = new MDXCompiler(mdxConfig, blogDir);
-  mdxConfig.remarkPlugins.unshift([remarkCompileMdxImports, { compiler, root: blogDir }]);
   return mdxConfig;
+}
+
+export function installCompileMdxImportsPlugin(mdxConfig: Required<MDXConfig>, pathCfg: PathConfig) {
+  const compiler = new MDXCompiler(mdxConfig, { blogDir: pathCfg.blogDir, outDir: pathCfg.outDir });
+  mdxConfig.remarkPlugins?.unshift([remarkCompileMdxImports, { compiler, root: pathCfg.blogDir }]);
+  return compiler;
 }
 
 export interface BlogConfig {
@@ -84,6 +89,7 @@ export interface BlogConfig {
   css?: UnoCSSConfig;
   html?: HtmlConfig;
   mdx?: MDXConfig;
+  shiki?: ShikiConfig;
 }
 
 export const DEFAULT_CONFIG = {
@@ -97,23 +103,44 @@ export const DEFAULT_CONFIG = {
   },
 };
 
-export function createBlogConfig(cfg: BlogConfig) {
-  const root = cfg.root ?? DEFAULT_CONFIG.root;
+export function createBlogConfig(cfg: BlogConfig, pathCfg: PathConfig, mdx: MDXConfig) {
   const server = { ...DEFAULT_CONFIG.server, ...cfg.server };
   const build = {
     ...DEFAULT_CONFIG.build,
     ...cfg.build,
-    outDir: resolve(root, cfg.build?.outDir ?? DEFAULT_CONFIG.build.outDir),
+    outDir: pathCfg.outDir,
   };
-  const blogDir = resolve(root, cfg.blogDir ?? DEFAULT_CONFIG.blogDir);
   return {
     ...cfg,
-    root,
-    base: cfg.base ?? DEFAULT_CONFIG.base,
-    blogDir: resolve(root, cfg.blogDir ?? DEFAULT_CONFIG.blogDir),
-    publicDir: resolve(root, cfg.publicDir ?? DEFAULT_CONFIG.publicDir),
+    ...pathCfg,
     server,
     build,
-    mdx: createMDXConfig(cfg.mdx, blogDir),
+    mdx,
+    shiki: createShikiConfig(cfg.shiki),
+  };
+}
+
+export interface PathConfig {
+  root: string;
+  base: string;
+  blogDir: string;
+  publicDir: string;
+  outDir: string;
+  baseUrl: string;
+}
+
+export function createPathConfig(cfg: BlogConfig) {
+  const root = cfg.root ?? DEFAULT_CONFIG.root;
+  const base = cfg.base ?? DEFAULT_CONFIG.base;
+  const blogDir = resolve(root, cfg.blogDir ?? DEFAULT_CONFIG.blogDir);
+  const publicDir = resolve(root, cfg.publicDir ?? DEFAULT_CONFIG.publicDir);
+  const outDir = resolve(root, cfg.build?.outDir ?? DEFAULT_CONFIG.build.outDir);
+  return {
+    root,
+    base,
+    blogDir,
+    publicDir,
+    outDir,
+    baseUrl: `file://${blogDir}/`,
   };
 }

@@ -27,12 +27,28 @@ export default function Index({ header, footer, avatar, title, description, post
       )}
 
       <div class="max-w-screen-md px-6 mx-auto">
-        <div class="pt-2 lt-sm:pt-12 border-t-1 border-gray-300/80">
+        <div class="pt-2 lt-sm:pt-12">
           {posts.map((post) => (
             <PostCard {...post} />
           ))}
         </div>
       </div>
+
+      {footer || (
+        <footer class="mt-20 pb-16">
+          <p class="text-center gap-2.5 text-gray-400/800 dark:text-gray-500/800 text-sm">
+            <span>
+              Created By{" "}
+              <a
+                class="tems-center gap-1 underline hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                href="https://quack.software"
+              >
+                QuackWare
+              </a>
+            </span>
+          </p>
+        </footer>
+      )}
     </div>
   );
 }

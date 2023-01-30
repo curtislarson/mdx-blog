@@ -1,5 +1,12 @@
-import { mdx } from "../deps.ts";
+import { MDXContent } from "https://esm.quack.id/v104/@types/mdx@2.0.3/types.d.ts";
+import { basename, join, mdx } from "../deps.ts";
 import { MDXConfig } from "./config.ts";
+
+export interface MDXCompilerOptions {
+  blogDir: string;
+  /** @default Deno.makeTempDirSync() */
+  outDir?: string;
+}
 
 /**
  * When a `mdx` component imports another `mdx` component we need to perform an intermediary compile step to `jsx`. We can
@@ -7,16 +14,17 @@ import { MDXConfig } from "./config.ts";
  */
 export class MDXCompiler {
   #config;
+  #outDir;
 
   #tempFileCache = new Map<string, string>();
-  #memoryCache = new Map<string, string>();
+  #memoryCache = new Map<string, MDXContent>();
 
-  constructor(config: MDXConfig, blogDir: string) {
+  constructor(config: Required<MDXConfig>, opts: MDXCompilerOptions) {
     this.#config = {
       ...config,
-      jsx: true,
-      baseUrl: `file://${blogDir}/`,
+      baseUrl: `file://${opts.blogDir}/`,
     };
+    this.#outDir = opts.outDir ?? Deno.makeTempDirSync();
   }
 
   compileToTempFile(sourcePath: string) {
@@ -26,27 +34,45 @@ export class MDXCompiler {
       return existing;
     }
 
-    const outPath = Deno.makeTempFileSync() + ".jsx";
+    const originalName = basename(sourcePath);
+    const outPath = join(this.#outDir, originalName.replace(/\.mdx?$/, ".jsx"));
     const content = Deno.readTextFileSync(sourcePath);
-    const compiled = mdx.compileSync(content, this.#config);
+    const compiled = mdx.compileSync(content, { ...this.#config, jsx: true });
     Deno.writeTextFileSync(outPath, compiled.value);
     this.#tempFileCache.set(sourcePath, outPath);
 
     return outPath;
   }
 
-  /** This doesn't work correctly yet */
-  compileToMemory(sourcePath: string) {
+  async evaluate(sourcePath: string, data?: string) {
     const existing = this.#memoryCache.get(sourcePath);
     if (existing != null) {
       console.log("Path exists in memory cache: ", sourcePath);
       return existing;
     }
 
-    const content = Deno.readTextFileSync(sourcePath);
-    const compiled = mdx.compileSync(content, this.#config);
-    this.#memoryCache.set(sourcePath, compiled.value);
+    data ??= await Deno.readTextFile(sourcePath);
+    const { default: MDXContent } = await mdx.evaluate(data, {
+      ...this.#config,
+    });
 
-    return compiled.value;
+    this.#memoryCache.set(sourcePath, MDXContent);
+    return MDXContent;
+  }
+
+  evaluateSync(sourcePath: string, data?: string) {
+    const existing = this.#memoryCache.get(sourcePath);
+    if (existing != null) {
+      console.log("MDXContent exists in memory cache: ", sourcePath);
+      return existing;
+    }
+
+    data ??= Deno.readTextFileSync(sourcePath);
+    const { default: MDXContent } = mdx.evaluateSync(data, {
+      ...this.#config,
+    });
+    this.#memoryCache.set(sourcePath, MDXContent);
+
+    return MDXContent;
   }
 }

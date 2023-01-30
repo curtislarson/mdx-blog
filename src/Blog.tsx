@@ -1,7 +1,6 @@
 /** @jsx h */
 import Post from "./components/Post.tsx";
 import {
-  mdx,
   ensureDirSync,
   frontmatter,
   serve,
@@ -11,9 +10,16 @@ import {
   h,
   dirname,
   renderToString,
+  resolve,
 } from "../deps.ts";
 import { createUnoCSSGenerator } from "./unocss.ts";
-import { BlogConfig, createBlogConfig } from "./config.ts";
+import {
+  BlogConfig,
+  createBlogConfig,
+  createMDXConfig,
+  createPathConfig,
+  installCompileMdxImportsPlugin,
+} from "./config.ts";
 import Html from "./Html.tsx";
 import Index from "./components/Index.tsx";
 import { installShikiPlugin } from "./shiki.ts";
@@ -31,20 +37,25 @@ interface ManifestEntry {
 }
 
 export class Blog {
+  readonly #pathCfg;
   readonly #cfg;
   readonly #css;
+  readonly #compiler;
 
   #manifest;
 
   constructor(config: BlogConfig) {
-    this.#cfg = createBlogConfig(config);
+    this.#pathCfg = createPathConfig(config);
+    const mdxConfig = createMDXConfig(config.mdx);
+    this.#compiler = installCompileMdxImportsPlugin(mdxConfig, this.#pathCfg);
+    this.#cfg = createBlogConfig(config, this.#pathCfg, mdxConfig);
     this.#css = createUnoCSSGenerator(this.#cfg.css);
     this.#manifest = this.refreshManifest();
   }
 
   async build() {
     ensureDirSync(this.#cfg.build.outDir);
-    await installShikiPlugin(this.#cfg.mdx);
+    await installShikiPlugin(this.#cfg.mdx, this.#cfg.shiki);
 
     console.log(`Collected ${this.#manifest.length} files`);
 
@@ -91,10 +102,7 @@ export class Blog {
       const data = await Deno.readTextFile(filePath);
       const meta = this.extractFrontmatter(data);
 
-      const { default: MDXContent } = await mdx.evaluate(data, {
-        ...this.#cfg.mdx,
-        baseUrl: `file://${this.#cfg.blogDir}/`,
-      });
+      const MDXContent = await this.#compiler.evaluate(filePath, data);
 
       const PostComponent = this.#cfg.html?.postComponent ?? Post;
 
@@ -197,7 +205,7 @@ export class Blog {
   }
 
   async serve() {
-    await installShikiPlugin(this.#cfg.mdx);
+    await installShikiPlugin(this.#cfg.mdx, this.#cfg.shiki);
     return await serve(async (req) => {
       if (req.method !== "GET") {
         return new Response(null, { status: 404 });
