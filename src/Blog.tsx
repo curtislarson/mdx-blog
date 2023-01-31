@@ -1,18 +1,7 @@
 /** @jsx h */
 import Post from "./components/Post.tsx";
-import {
-  ensureDirSync,
-  frontmatter,
-  serve,
-  walkSync,
-  basename,
-  join,
-  h,
-  dirname,
-  renderToString,
-  resolve,
-} from "../deps.ts";
-import { createUnoCSSGenerator } from "./unocss.ts";
+import { ensureDirSync, frontmatter, serve, walkSync, basename, join, h, dirname, renderToString } from "../deps.ts";
+import { createCSSProcessor } from "./css.ts";
 import {
   BlogConfig,
   createBlogConfig,
@@ -49,14 +38,15 @@ export class Blog {
     const mdxConfig = createMDXConfig(config.mdx);
     this.#compiler = installCompileMdxImportsPlugin(mdxConfig, this.#pathCfg);
     this.#cfg = createBlogConfig(config, this.#pathCfg, mdxConfig);
-    this.#css = createUnoCSSGenerator(this.#cfg.css);
+    this.#css = createCSSProcessor(this.#cfg.css);
     this.#manifest = this.refreshManifest();
   }
 
   async build() {
     ensureDirSync(this.#cfg.build.outDir);
-    await installShikiPlugin(this.#cfg.mdx, this.#cfg.shiki);
-
+    if (this.#cfg.shiki) {
+      await installShikiPlugin(this.#cfg.mdx, this.#cfg.shiki);
+    }
     console.log(`Collected ${this.#manifest.length} files`);
 
     /**
@@ -111,16 +101,19 @@ export class Blog {
           <MDXContent />
         </PostComponent>
       );
-      const css = await this.#css(body);
+      const css = await this.#css.generate(body);
+      const purged = await this.#css.purge(body, css);
+
       const html = renderToString(
         <Html
           title={this.#cfg.html?.title}
           links={this.#cfg.html?.links}
           meta={this.#cfg.html?.meta}
           body={body}
-          styles={(this.#cfg.html?.styles ?? []).concat(css)}
+          styles={(this.#cfg.html?.styles ?? []).concat(purged.map((p) => p.css))}
         />
       );
+
       return html;
     } catch (e) {
       console.error("Error in renderFile", e);
@@ -162,16 +155,19 @@ export class Blog {
         posts={mostRecent}
       />
     );
-    const css = await this.#css(body);
+    const css = await this.#css.generate(body);
+    const purged = await this.#css.purge(body, css);
+
     const html = renderToString(
       <Html
         title={this.#cfg.html?.title}
         links={this.#cfg.html?.links}
         meta={this.#cfg.html?.meta}
         body={body}
-        styles={(this.#cfg.html?.styles ?? []).concat(css)}
+        styles={(this.#cfg.html?.styles ?? []).concat(purged.map((p) => p.css))}
       />
     );
+
     return html;
   }
 
@@ -205,7 +201,9 @@ export class Blog {
   }
 
   async serve() {
-    await installShikiPlugin(this.#cfg.mdx, this.#cfg.shiki);
+    if (this.#cfg.shiki) {
+      await installShikiPlugin(this.#cfg.mdx, this.#cfg.shiki);
+    }
     return await serve(async (req) => {
       if (req.method !== "GET") {
         return new Response(null, { status: 404 });

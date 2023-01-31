@@ -38,6 +38,7 @@ export default function Html({ body, title, styles, links, meta }: HtmlProps) {
           )
         )}
       </head>
+
       <body dangerouslySetInnerHTML={{ __html: body }}></body>
     </html>
   );

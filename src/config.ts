@@ -8,14 +8,16 @@ import {
   resolve,
   ServeDirOptions,
 } from "../deps.ts";
+import { UnoCSSConfig } from "./css.ts";
 import { MDXCompiler } from "./mdx-compiler.ts";
 import remarkCompileMdxImports from "./remark-plugins/remark-compile-mdx-imports.ts";
 import { createShikiConfig, ShikiConfig } from "./shiki.ts";
-import { UnoCSSConfig } from "./unocss.ts";
 
 export type HtmlConfigStyles = (string | { href?: string; text?: string; id?: string })[];
 
+/** Configuration for customizing the base html template */
 export interface HtmlConfig {
+  /** Title of the html page */
   title?: string;
   meta?: Record<string, string | null | undefined>;
   links?: { [key: string]: string; href: string; rel: string }[];
@@ -75,21 +77,41 @@ export function installCompileMdxImportsPlugin(mdxConfig: Required<MDXConfig>, p
 }
 
 export interface BlogConfig {
-  /** @default Deno.cwd() */
+  /**
+   * Root directory of the project. All other relative or absolute directory paths specified in the
+   * config are in relation to this one.
+   * @default Deno.cwd()
+   */
   root?: string;
-  /** @default "blog" */
+  /**
+   * The directory where markdown or mdx posts are read from to convert to html
+   * @default "blog"
+   */
   blogDir?: string;
-  /** @default "/" */
+  /**
+   * TODO: Rework probs
+   */
   base?: string;
-  /** @default "public" */
+
+  /**
+   * Assets placed in this directory will be hoisted to the root web server directory. Best used for things like `robots.txt` or `favicon.ico`.
+   * @default "public"
+   */
   publicDir?: string;
+  /** Specific config for the server sub process */
   server?: ServerConfig;
+  /** Specific config for the build sub process */
   build?: BuildConfig;
+  /** A helper config that contains all the importan when building a blog */
   index?: IndexConfig;
+  /** CSS Config */
   css?: UnoCSSConfig;
+  /** HTML Document properties liek `title` or `meta` tags. */
   html?: HtmlConfig;
+  /** Configuration specific to the mdx compilers */
   mdx?: MDXConfig;
-  shiki?: ShikiConfig;
+  /** Shiki language and theme configs. If a null value is received here then shiki is disabled. */
+  shiki?: ShikiConfig | null;
 }
 
 export const DEFAULT_CONFIG = {
@@ -116,7 +138,7 @@ export function createBlogConfig(cfg: BlogConfig, pathCfg: PathConfig, mdx: MDXC
     server,
     build,
     mdx,
-    shiki: createShikiConfig(cfg.shiki),
+    shiki: cfg.shiki ? createShikiConfig(cfg.shiki) : null,
   };
 }
 
