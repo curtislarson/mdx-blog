@@ -20,8 +20,8 @@ export default function Index({ header, footer, avatar, title, description, post
                 style={{ backgroundImage: `url(${avatar})` }}
               />
             )}
-            <h1 class="mt-3 text-4xl text-gray-900 dark:text-gray-100 font-bold">{title ?? "My Blog"}</h1>
-            {description && <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">{description}</p>}
+            <h1 class="mt-3 text-7xl font-semibold text-white">{title ?? "My Blog"}</h1>
+            {description && <h2 class="text-2xl mt-2 font-light text-white">{description}</h2>}
           </div>
         </header>
       )}
