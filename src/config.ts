@@ -8,7 +8,7 @@ import {
   resolve,
   ServeDirOptions,
 } from "../deps.ts";
-import { UnoCSSConfig } from "./css.ts";
+import { CSSConfig } from "./css.ts";
 import { MDXCompiler } from "./mdx-compiler.ts";
 import remarkCompileMdxImports from "./remark-plugins/remark-compile-mdx-imports.ts";
 import { createShikiConfig, ShikiConfig } from "./shiki.ts";
@@ -105,7 +105,7 @@ export interface BlogConfig {
   /** A helper config that contains all the importan when building a blog */
   index?: IndexConfig;
   /** CSS Config */
-  css?: UnoCSSConfig;
+  css?: CSSConfig;
   /** HTML Document properties liek `title` or `meta` tags. */
   html?: HtmlConfig;
   /** Configuration specific to the mdx compilers */

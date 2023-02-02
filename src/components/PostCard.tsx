@@ -1,6 +1,7 @@
 /** @jsx h */
 import { h } from "../../deps.ts";
 import PrettyDate from "./PrettyDate.tsx";
+import ReadMore from "./ReadMore.tsx";
 
 export interface PostCardProps {
   readonly title: string;
@@ -35,9 +36,7 @@ export default function PostCard(props: PostCardProps) {
           </div>
           <p class="mt-3 text-base">{props.preview}</p>
           <div class="card-actions mt-4">
-            <a class="btn btn-primary" href={props.href} title={`Read "${props.title}"`}>
-              Read More
-            </a>
+            <ReadMore href={props.href} title={props.title} />
           </div>
         </div>
       </div>

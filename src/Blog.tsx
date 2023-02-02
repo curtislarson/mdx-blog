@@ -97,7 +97,7 @@ export class Blog {
       const PostComponent = this.#cfg.html?.postComponent ?? Post;
 
       const body = renderToString(
-        <PostComponent title={meta?.attrs.title} preview={meta?.attrs.preview}>
+        <PostComponent title={meta?.attrs.title} preview={meta?.attrs.preview} theme={this.#cfg.css?.theme}>
           <MDXContent />
         </PostComponent>
       );
@@ -152,6 +152,7 @@ export class Blog {
         title={this.#cfg.index?.title ?? this.#cfg.html?.title}
         footer={this.#cfg.index?.footer}
         header={this.#cfg.index?.header}
+        theme={this.#cfg.css?.theme}
         posts={mostRecent}
       />
     );
