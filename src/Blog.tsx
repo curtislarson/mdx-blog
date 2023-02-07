@@ -12,31 +12,20 @@ import {
 import Html from "./Html.tsx";
 import Index from "./components/Index.tsx";
 import { installShikiPlugin } from "./shiki.ts";
-
-export interface PostFrontmatter extends Record<string, unknown> {
-  title?: string;
-  preview?: string;
-  date?: string;
-  tags?: string[];
-}
-
-interface ManifestEntry {
-  filePath: string;
-  stat: Deno.FileInfo;
-}
+import { MDXCompiler } from "./mdx-compiler.ts";
+import { ManifestEntry, PostFrontmatter } from "./types.ts";
 
 export class Blog {
   readonly #pathCfg;
   readonly #cfg;
   readonly #css;
-  readonly #compiler;
 
   #manifest;
 
   constructor(config: BlogConfig) {
+    console.log("Init Config", JSON.stringify(config, null, 2));
     this.#pathCfg = createPathConfig(config);
     const mdxConfig = createMDXConfig(config.mdx);
-    this.#compiler = installCompileMdxImportsPlugin(mdxConfig, this.#pathCfg);
     this.#cfg = createBlogConfig(config, this.#pathCfg, mdxConfig);
     this.#css = createCSSProcessor(this.#cfg.css);
     this.#manifest = this.refreshManifest();
@@ -47,12 +36,16 @@ export class Blog {
     if (this.#cfg.shiki) {
       await installShikiPlugin(this.#cfg.mdx, this.#cfg.shiki);
     }
+    const compiler = installCompileMdxImportsPlugin(this.#cfg.mdx, this.#pathCfg);
+
     console.log(`Collected ${this.#manifest.length} files`);
 
     /**
      * TODO: Don't build all the files here
      */
-    const result = await Promise.all(this.#manifest.map(({ filePath }) => this.renderAndWriteToFile(filePath)));
+    const result = await Promise.all(
+      this.#manifest.map(({ filePath }) => this.renderAndWriteToFile(filePath, compiler))
+    );
 
     const [okBuilds, badBuilds] = result.reduce<[string[], string[]]>(
       (acc, curr) => {
@@ -87,17 +80,26 @@ export class Blog {
     }
   }
 
-  async renderFile(filePath: string) {
+  async renderFile(filePath: string, compiler: MDXCompiler) {
     try {
       const data = await Deno.readTextFile(filePath);
       const meta = this.extractFrontmatter(data);
 
-      const MDXContent = await this.#compiler.evaluate(filePath, data);
+      console.log("meta", meta);
+
+      const MDXContent = await compiler.evaluate(filePath, data);
 
       const PostComponent = this.#cfg.html?.postComponent ?? Post;
 
       const body = renderToString(
-        <PostComponent title={meta?.attrs.title} preview={meta?.attrs.preview} theme={this.#cfg.css?.theme}>
+        <PostComponent
+          title={meta?.attrs.title ?? "Untitled"}
+          preview={meta?.attrs.preview}
+          author={meta?.attrs.author}
+          date={meta?.attrs.date}
+          tags={meta?.attrs.tags}
+          theme={this.#cfg.css?.theme}
+        >
           <MDXContent />
         </PostComponent>
       );
@@ -121,9 +123,9 @@ export class Blog {
     }
   }
 
-  async renderAndWriteToFile(filePath: string) {
+  async renderAndWriteToFile(filePath: string, compiler: MDXCompiler) {
     try {
-      const html = await this.renderFile(filePath);
+      const html = await this.renderFile(filePath, compiler);
 
       const outFilePath = join(this.#cfg.build.outDir, basename(filePath).replace(/\.mdx?$/, ".html"));
       ensureDirSync(dirname(outFilePath));
@@ -139,9 +141,7 @@ export class Blog {
   }
 
   async renderIndex() {
-    if (this.#manifest.length === 0) {
-      this.#manifest = this.refreshManifest();
-    }
+    this.#manifest = this.refreshManifest();
 
     const mostRecent = this.getMostRecentPosts();
 
@@ -195,6 +195,7 @@ export class Blog {
         href: t.filePath.replace(this.#cfg.blogDir, "").replace(/\.mdx?$/, ""),
         preview: frontmatter?.attrs.preview,
         tags: frontmatter?.attrs.tags,
+        author: frontmatter?.attrs.author,
         date: dateOrBirth ? new Date(dateOrBirth) : undefined,
         frontmatter,
       };
@@ -205,6 +206,8 @@ export class Blog {
     if (this.#cfg.shiki) {
       await installShikiPlugin(this.#cfg.mdx, this.#cfg.shiki);
     }
+    const compiler = installCompileMdxImportsPlugin(this.#cfg.mdx, this.#pathCfg);
+
     return await serve(async (req) => {
       if (req.method !== "GET") {
         return new Response(null, { status: 404 });
@@ -224,7 +227,7 @@ export class Blog {
       const searchPaths = [`${filePath}.mdx`, `${filePath}.md`];
       for (const path of searchPaths) {
         try {
-          const html = await this.renderFile(path);
+          const html = await this.renderFile(path, compiler);
           return new Response(html, {
             headers: { "content-type": "text/html" },
             status: 200,

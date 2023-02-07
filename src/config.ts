@@ -54,7 +54,6 @@ export interface MDXConfig {
 }
 
 export const DEFAULT_MDX_CONFIG = {
-  ...preactRuntime,
   useDynamicImport: true,
   providerImportSource: "https://esm.quack.id/@mdx-js/preact@2.1.2",
   jsxImportSource: "https://esm.quack.id/preact@10.11.3",
@@ -70,7 +69,7 @@ export function createMDXConfig(cfg: MDXConfig = {}) {
   return mdxConfig;
 }
 
-export function installCompileMdxImportsPlugin(mdxConfig: Required<MDXConfig>, pathCfg: PathConfig) {
+export function installCompileMdxImportsPlugin(mdxConfig: MDXConfig, pathCfg: PathConfig) {
   const compiler = new MDXCompiler(mdxConfig, { blogDir: pathCfg.blogDir, outDir: pathCfg.outDir });
   mdxConfig.remarkPlugins?.unshift([remarkCompileMdxImports, { compiler, root: pathCfg.blogDir }]);
   return compiler;
@@ -93,6 +92,9 @@ export interface BlogConfig {
    */
   base?: string;
 
+  /** Sets the author tag for any post not provided via frontmatter */
+  author?: string;
+
   /**
    * Assets placed in this directory will be hoisted to the root web server directory. Best used for things like `robots.txt` or `favicon.ico`.
    * @default "public"
@@ -106,7 +108,7 @@ export interface BlogConfig {
   index?: IndexConfig;
   /** CSS Config */
   css?: CSSConfig;
-  /** HTML Document properties liek `title` or `meta` tags. */
+  /** HTML Document properties like `title` or `meta` tags. */
   html?: HtmlConfig;
   /** Configuration specific to the mdx compilers */
   mdx?: MDXConfig;
@@ -119,6 +121,7 @@ export const DEFAULT_CONFIG = {
   base: "/",
   blogDir: "blog",
   publicDir: "public",
+  author: "Curtis Larson",
   server: {},
   build: {
     outDir: "dist",
@@ -135,10 +138,11 @@ export function createBlogConfig(cfg: BlogConfig, pathCfg: PathConfig, mdx: MDXC
   return {
     ...cfg,
     ...pathCfg,
+    author: cfg.author,
     server,
     build,
     mdx,
-    shiki: cfg.shiki ? createShikiConfig(cfg.shiki) : null,
+    shiki: cfg.shiki !== null ? createShikiConfig(cfg.shiki) : null,
   };
 }
 

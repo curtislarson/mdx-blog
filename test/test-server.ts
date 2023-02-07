@@ -8,4 +8,5 @@ await new Blog({
   root,
   index: { title: "blog", description: "Unprompted thoughts" },
   css: { theme: "dracula" },
+  author: "Curtis Larson",
 }).serve();

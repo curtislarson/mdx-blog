@@ -8,7 +8,7 @@ export interface ReadMoreProps {
 
 export default function ReadMore(props: ReadMoreProps) {
   return (
-    <a class="btn btn-primary m-1" href={props.href} title={`Read "${props.title}"`}>
+    <a class="link link-primary" href={props.href} title={`Read "${props.title}"`}>
       Read More
     </a>
   );

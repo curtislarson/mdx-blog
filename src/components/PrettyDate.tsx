@@ -1,5 +1,6 @@
 /** @jsx h */
 import { h } from "../../deps.ts";
+import CalendarIcon from "./icons/Calendar.tsx";
 
 export interface PrettyDateProps {
   date: Date;
@@ -7,5 +8,12 @@ export interface PrettyDateProps {
 
 export default function PrettyDate({ date }: PrettyDateProps) {
   const isoString = date.toISOString();
-  return <time dateTime={isoString}>{isoString.split("T")[0]}</time>;
+  return (
+    <div class="items-center flex flex-row">
+      <CalendarIcon />
+      <time class="ml-1" dateTime={isoString}>
+        {isoString.split("T")[0]}
+      </time>
+    </div>
+  );
 }

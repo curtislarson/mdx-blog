@@ -23,6 +23,6 @@ Build a blog with [MDX](https://mdxjs.com/). Right now still a rough work in pro
 - [x] Import MDX Regex will incorrectly replace examples in code blocks
 - [ ] Support importing `tsx` components from `mdx`
 - [x] Integrate shiki
-- [ ] DaisyUI support broke shiki :(
+- [x] DaisyUI support broke shiki :(
 - [ ] Support a documentation like website format
 - [ ] Basic CLI to allow operations like `init`, `New Post`, etc that can use preferred templates

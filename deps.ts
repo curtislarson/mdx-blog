@@ -5,7 +5,7 @@ export { basename, dirname, join, resolve } from "https://deno.land/std@0.173.0/
 export * as frontmatter from "https://deno.land/std@0.174.0/encoding/front_matter/any.ts";
 export * as mdx from "https://esm.quack.id/@mdx-js/mdx@2.2.1";
 export { renderToString } from "https://esm.quack.id/preact-render-to-string@5.2.6";
-export { h, type JSX, type VNode } from "https://esm.quack.id/preact@10.11.3";
+export { Fragment, h, type JSX, type VNode } from "https://esm.quack.id/preact@10.11.3";
 export * as preactRuntime from "https://esm.quack.id/preact@10.11.3/jsx-runtime";
 export { default as remarkFrontmatter } from "https://esm.quack.id/remark-frontmatter@4.0.1";
 export { default as remarkGFM } from "https://esm.quack.id/remark-gfm@3.0.1";

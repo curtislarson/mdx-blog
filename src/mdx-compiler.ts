@@ -1,5 +1,5 @@
 import { MDXContent } from "https://esm.quack.id/v104/@types/mdx@2.0.3/types.d.ts";
-import { basename, join, mdx } from "../deps.ts";
+import { basename, join, mdx, preactRuntime } from "../deps.ts";
 import { MDXConfig } from "./config.ts";
 
 export interface MDXCompilerOptions {
@@ -19,7 +19,7 @@ export class MDXCompiler {
   #tempFileCache = new Map<string, string>();
   #memoryCache = new Map<string, MDXContent>();
 
-  constructor(config: Required<MDXConfig>, opts: MDXCompilerOptions) {
+  constructor(config: MDXConfig, opts: MDXCompilerOptions) {
     this.#config = {
       ...config,
       baseUrl: `file://${opts.blogDir}/`,
@@ -53,6 +53,7 @@ export class MDXCompiler {
 
     data ??= await Deno.readTextFile(sourcePath);
     const { default: MDXContent } = await mdx.evaluate(data, {
+      ...preactRuntime,
       ...this.#config,
     });
 
@@ -69,6 +70,7 @@ export class MDXCompiler {
 
     data ??= Deno.readTextFileSync(sourcePath);
     const { default: MDXContent } = mdx.evaluateSync(data, {
+      ...preactRuntime,
       ...this.#config,
     });
     this.#memoryCache.set(sourcePath, MDXContent);
