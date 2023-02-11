@@ -1,6 +1,6 @@
-# mdx-blog (WIP)
+# mdx-static (WIP)
 
-Build a blog with [MDX](https://mdxjs.com/). Right now still a rough work in progress.
+A simple static site generator using MDX and Deno. Right now still a rough work in progress.
 
 ## Features
 
@@ -24,5 +24,6 @@ Build a blog with [MDX](https://mdxjs.com/). Right now still a rough work in pro
 - [ ] Support importing `tsx` components from `mdx`
 - [x] Integrate shiki
 - [x] DaisyUI support broke shiki :(
+- [x] Need to compress + embed css, perhaps with gzip + base64
 - [ ] Support a documentation like website format
 - [ ] Basic CLI to allow operations like `init`, `New Post`, etc that can use preferred templates

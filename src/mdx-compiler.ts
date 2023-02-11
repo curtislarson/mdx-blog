@@ -1,5 +1,4 @@
-import { MDXContent } from "https://esm.quack.id/v104/@types/mdx@2.0.3/types.d.ts";
-import { basename, join, mdx, preactRuntime } from "../deps.ts";
+import { basename, join, mdx, MDXContent, preactRuntime } from "../deps.ts";
 import { MDXConfig } from "./config.ts";
 
 export interface MDXCompilerOptions {

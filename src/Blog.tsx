@@ -95,7 +95,7 @@ export class Blog {
         <PostComponent
           title={meta?.attrs.title ?? "Untitled"}
           preview={meta?.attrs.preview}
-          author={meta?.attrs.author}
+          author={meta?.attrs.author ?? this.#cfg.author}
           date={meta?.attrs.date}
           tags={meta?.attrs.tags}
           theme={this.#cfg.css?.theme}
@@ -105,18 +105,7 @@ export class Blog {
       );
       const css = await this.#css.generate(body);
       const purged = await this.#css.purge(body, css);
-
-      const html = renderToString(
-        <Html
-          title={this.#cfg.html?.title}
-          links={this.#cfg.html?.links}
-          meta={this.#cfg.html?.meta}
-          body={body}
-          styles={(this.#cfg.html?.styles ?? []).concat(purged.map((p) => p.css))}
-        />
-      );
-
-      return html;
+      return this.#renderHtml(body, purged);
     } catch (e) {
       console.error("Error in renderFile", e);
       throw e;
@@ -158,18 +147,20 @@ export class Blog {
     );
     const css = await this.#css.generate(body);
     const purged = await this.#css.purge(body, css);
+    return this.#renderHtml(body, purged);
+  }
 
-    const html = renderToString(
+  #renderHtml(body: string, purgedCss: { css: string }[]) {
+    return renderToString(
       <Html
         title={this.#cfg.html?.title}
         links={this.#cfg.html?.links}
         meta={this.#cfg.html?.meta}
+        theme={this.#cfg.css?.theme}
         body={body}
-        styles={(this.#cfg.html?.styles ?? []).concat(purged.map((p) => p.css))}
+        styles={(this.#cfg.html?.styles ?? []).concat(purgedCss.map((p) => p.css))}
       />
     );
-
-    return html;
   }
 
   /**
@@ -195,7 +186,7 @@ export class Blog {
         href: t.filePath.replace(this.#cfg.blogDir, "").replace(/\.mdx?$/, ""),
         preview: frontmatter?.attrs.preview,
         tags: frontmatter?.attrs.tags,
-        author: frontmatter?.attrs.author,
+        author: frontmatter?.attrs.author ?? this.#cfg.author,
         date: dateOrBirth ? new Date(dateOrBirth) : undefined,
         frontmatter,
       };

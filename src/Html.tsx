@@ -3,13 +3,14 @@ import { h } from "../deps.ts";
 import { HtmlConfig, HtmlConfigStyles } from "./config.ts";
 
 export interface HtmlProps extends HtmlConfig {
+  theme?: string;
   body: string;
   styles: HtmlConfigStyles;
 }
 
-export default function Html({ body, title, styles, links, meta }: HtmlProps) {
+export default function Html({ body, theme, title, styles, links, meta }: HtmlProps) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme={theme}>
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />

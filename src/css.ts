@@ -1,9 +1,11 @@
 // Modified from https://github.com/ije/html/blob/main/plugins/unocss.ts
 import type { Preset, UserConfig } from "https://esm.quack.id/@unocss/core@0.49.0";
 import { UnoGenerator } from "https://esm.quack.id/@unocss/core@0.49.0";
-import presetTypeography from "https://esm.quack.id/@unocss/preset-typography@0.49.0?bundle&no-check";
-import presetUno from "https://esm.quack.id/@unocss/preset-uno@0.49.0?bundle&no-check";
+import presetTypeography from "https://esm.quack.id/@unocss/preset-typography@0.49.0?bundle";
+import presetUno from "https://esm.quack.id/@unocss/preset-uno@0.49.0?bundle";
 import { PurgeCSS } from "https://esm.quack.id/purgecss@5.0.0";
+import { decompressFromBase64 } from "./compress.ts";
+import { DAISYUI_BASE64 } from "./daisyui-base64.ts";
 
 export interface CSSConfig extends UserConfig {
   /** DaisyUI theme */
@@ -26,15 +28,33 @@ export function createCSSPurger() {
 
 export function createCSSProcessor(config?: UserConfig) {
   const uno = new UnoGenerator({
-    presets: [presetUno(), presetTypeography()] as unknown as Preset[],
+    presets: [
+      presetUno(),
+      presetTypeography({
+        cssExtend: {
+          "h1": {
+            color: "#BD93F9",
+            "font-size": "1.75em",
+          },
+          "h2,h3,h4,h5": {
+            color: "#BD93F9",
+          },
+          "a": {
+            color: "#8BE9FD",
+            "text-decoration-line": "underline",
+            cursor: "pointer",
+          },
+        },
+      }),
+    ] as unknown as Preset[],
     ...config,
   });
-  const daisyCSS = Deno.readTextFileSync(new URL("../assets/daisyui.css", import.meta.url));
   const purge = createCSSPurger();
+  const daisyUICss = decompressFromBase64(DAISYUI_BASE64);
 
   async function generate(body: string) {
     const { css } = await uno.generate(body);
-    return [unoResetCSS, daisyCSS, css];
+    return [unoResetCSS, daisyUICss, css];
   }
 
   return {

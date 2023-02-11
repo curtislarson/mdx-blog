@@ -15,7 +15,7 @@ export default function PostCard(props: PostCardProps) {
     <div class="card w-[28rem] bg-base-300 shadow-xl mb-6">
       <div class="card-body">
         <a href={props.href}>
-          <h3 class="card-title text-2xl text-secondary">{props.title}</h3>
+          <h3 class="card-title text-2xl text-primary">{props.title}</h3>
         </a>
         <div class="mt-2 flex flex-col">
           <div class="flex flex-row items-center text-gray-300 text-sm">

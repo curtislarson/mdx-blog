@@ -104,7 +104,15 @@ export interface BlogConfig {
   server?: ServerConfig;
   /** Specific config for the build sub process */
   build?: BuildConfig;
-  /** A helper config that contains all the importan when building a blog */
+  /**
+   * Configuration for the blog index page
+   *
+   * @example
+   * {
+   *  title: "My Blog",
+   *  description: "My Blog Description",
+   * }
+   */
   index?: IndexConfig;
   /** CSS Config */
   css?: CSSConfig;
