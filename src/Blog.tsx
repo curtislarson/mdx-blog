@@ -85,8 +85,6 @@ export class Blog {
       const data = await Deno.readTextFile(filePath);
       const meta = this.extractFrontmatter(data);
 
-      console.log("meta", meta);
-
       const MDXContent = await compiler.evaluate(filePath, data);
 
       const PostComponent = this.#cfg.html?.postComponent ?? Post;
