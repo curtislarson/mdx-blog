@@ -62,8 +62,8 @@ export interface MDXConfig {
 
 export const DEFAULT_MDX_CONFIG = {
   useDynamicImport: true,
-  providerImportSource: "https://esm.quack.id/@mdx-js/preact@2.1.2",
-  jsxImportSource: "https://esm.quack.id/preact@10.11.3",
+  providerImportSource: "https://esm.quack.id/@mdx-js/preact@2.3.0",
+  jsxImportSource: "https://esm.quack.id/preact@10.13.2",
   remarkPlugins: [remarkFrontmatter as any, remarkMdxFrontmatter, remarkGFM],
   rehypePlugins: [],
 };
