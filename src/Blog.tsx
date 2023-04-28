@@ -1,6 +1,5 @@
-/** @jsx h */
 import Post from "./components/Post.tsx";
-import { ensureDirSync, frontmatter, serve, walkSync, basename, join, h, dirname, renderToString } from "../deps.ts";
+import { ensureDir, frontmatter, serve, walkSync, basename, join, h, dirname, renderToString } from "../deps.ts";
 import { createCSSProcessor } from "./css.ts";
 import {
   BlogConfig,
@@ -9,16 +8,27 @@ import {
   createPathConfig,
   installCompileMdxImportsPlugin,
 } from "./config.ts";
-import Html from "./Html.tsx";
+import HTMLDocument from "./components/HTMLDocument.tsx";
 import Index from "./components/Index.tsx";
 import { installShikiPlugin } from "./shiki.ts";
 import { MDXCompiler } from "./mdx-compiler.ts";
-import { ManifestEntry, PostFrontmatter } from "./types.ts";
+import { ManifestEntry, PostFrontmatter, RecentPost } from "./types.ts";
+
+export interface RenderIndexFilter {
+  tags?: string[];
+}
+
+export interface GetPostsArgs {
+  /** @default 5 */
+  limit?: number;
+  filter?: RenderIndexFilter;
+}
 
 export class Blog {
   readonly #pathCfg;
   readonly #cfg;
   readonly #css;
+  readonly #frontMatterCache = new Map<string, PostFrontmatter | null>();
 
   #manifest;
 
@@ -32,7 +42,7 @@ export class Blog {
   }
 
   async build() {
-    ensureDirSync(this.#cfg.build.outDir);
+    await ensureDir(this.#cfg.build.outDir);
     if (this.#cfg.shiki) {
       await installShikiPlugin(this.#cfg.mdx, this.#cfg.shiki);
     }
@@ -63,19 +73,36 @@ export class Blog {
     console.log(`# BAD: ${badBuilds.length}`);
   }
 
+  /**
+   * Walks the blog directory to find the published posts and returns them ordered by most recent birthtime.
+   */
   refreshManifest(): ManifestEntry[] {
     const manifest: ManifestEntry[] = [];
     for (const entry of walkSync(this.#cfg.blogDir, { exts: [".md", ".mdx"], includeDirs: false })) {
       const stat = Deno.statSync(entry.path);
       manifest.push({ stat, filePath: entry.path });
     }
-    return manifest;
+    return manifest.sort((a, b) => {
+      if (a.stat.birthtime) {
+        return b.stat.birthtime ? (b.stat.birthtime > a.stat.birthtime ? 1 : -1) : -1;
+      } else if (b.stat.birthtime) {
+        return 1;
+      }
+      return 0;
+    });
   }
 
-  extractFrontmatter(data: string) {
+  extractFrontmatter(filePath: string, data: string) {
+    const existing = this.#frontMatterCache.get(filePath);
+    if (existing !== undefined) {
+      return existing;
+    }
     if (frontmatter.test(data)) {
-      return frontmatter.extract<PostFrontmatter>(data);
+      const extracted = frontmatter.extract<PostFrontmatter>(data);
+      this.#frontMatterCache.set(filePath, extracted.attrs);
+      return extracted.attrs;
     } else {
+      this.#frontMatterCache.set(filePath, null);
       return null;
     }
   }
@@ -83,7 +110,7 @@ export class Blog {
   async renderFile(filePath: string, compiler: MDXCompiler) {
     try {
       const data = await Deno.readTextFile(filePath);
-      const meta = this.extractFrontmatter(data);
+      const meta = this.extractFrontmatter(filePath, data);
 
       const MDXContent = await compiler.evaluate(filePath, data);
 
@@ -91,11 +118,11 @@ export class Blog {
 
       const body = renderToString(
         <PostComponent
-          title={meta?.attrs.title ?? "Untitled"}
-          preview={meta?.attrs.preview}
-          author={meta?.attrs.author ?? this.#cfg.author}
-          date={meta?.attrs.date}
-          tags={meta?.attrs.tags}
+          title={meta?.title ?? "Untitled"}
+          preview={meta?.preview}
+          author={meta?.author ?? this.#cfg.author}
+          date={meta?.date}
+          tags={meta?.tags}
           theme={this.#cfg.css?.theme}
         >
           <MDXContent />
@@ -115,7 +142,7 @@ export class Blog {
       const html = await this.renderFile(filePath, compiler);
 
       const outFilePath = join(this.#cfg.build.outDir, basename(filePath).replace(/\.mdx?$/, ".html"));
-      ensureDirSync(dirname(outFilePath));
+      await ensureDir(dirname(outFilePath));
       await Deno.writeTextFile(outFilePath, `<!DOCTYPE html>${html}`);
 
       console.log(`OK: ${outFilePath}`);
@@ -127,10 +154,10 @@ export class Blog {
     }
   }
 
-  async renderIndex() {
+  async renderIndex(filter: RenderIndexFilter = {}) {
     this.#manifest = this.refreshManifest();
 
-    const mostRecent = this.getMostRecentPosts();
+    const mostRecent = await this.getMostRecentPosts({ filter });
 
     const body = renderToString(
       <Index
@@ -141,6 +168,7 @@ export class Blog {
         header={this.#cfg.index?.header}
         theme={this.#cfg.css?.theme}
         posts={mostRecent}
+        tags={filter.tags}
       />
     );
     const css = await this.#css.generate(body);
@@ -150,7 +178,7 @@ export class Blog {
 
   #renderHtml(body: string, purgedCss: { css: string }[]) {
     return renderToString(
-      <Html
+      <HTMLDocument
         title={this.#cfg.html?.title}
         links={this.#cfg.html?.links}
         meta={this.#cfg.html?.meta}
@@ -165,30 +193,47 @@ export class Blog {
    * We could go off of file stat metrics like creation time or last edit time.
    * Also could use more expensive frontmatter or filename heuristics
    */
-  getMostRecentPosts(topN: number = 5) {
-    const top = this.#manifest.sort((a, b) => {
-      if (a.stat.birthtime) {
-        return b.stat.birthtime ? (b.stat.birthtime > a.stat.birthtime ? 1 : -1) : -1;
-      } else if (b.stat.birthtime) {
-        return 1;
+  async getMostRecentPosts(args: GetPostsArgs = {}) {
+    const limit = args.limit ?? 5;
+    const mostRecentPosts: RecentPost[] = [];
+    for (let i = 0; i < this.#manifest.length; i++) {
+      const post = this.#manifest[i];
+      const data = Deno.readTextFileSync(post.filePath);
+      const frontmatter = await this.extractFrontmatter(post.filePath, data);
+      if (frontmatter?.tags && frontmatter.tags.length > 0) {
+        const fmTags = frontmatter.tags;
+        // This post has tags
+        if (args.filter?.tags && args.filter.tags.length > 0) {
+          // We are filtering by tag(s)
+          if (!args.filter.tags.some((tag) => fmTags.includes(tag))) {
+            // And none of the filter tags match the post's tags, so we skip
+            continue;
+          }
+          // We match the tags if we reached this point, so proceed
+        }
+        // We either match the tags or no tags provided, so proceed
+      } else if (args.filter?.tags && args.filter?.tags.length > 0) {
+        // Post has no tags but we are filtering by 1+ tag, so we skip
+        continue;
       }
-      return 0;
-    });
-    return top.slice(0, topN).map((t) => {
-      const data = Deno.readTextFileSync(t.filePath);
-      const frontmatter = this.extractFrontmatter(data);
-      const dateOrBirth = frontmatter?.attrs.date ?? t.stat.birthtime;
-      return {
-        ...t,
-        title: frontmatter?.attrs.title ?? basename(t.filePath),
-        href: t.filePath.replace(this.#cfg.blogDir, "").replace(/\.mdx?$/, ""),
-        preview: frontmatter?.attrs.preview,
-        tags: frontmatter?.attrs.tags,
-        author: frontmatter?.attrs.author ?? this.#cfg.author,
+      // If we reach this point we didn't skip, so add post
+      const dateOrBirth = frontmatter?.date ?? post.stat.birthtime;
+      mostRecentPosts.push({
+        ...post,
+        title: frontmatter?.title ?? basename(post.filePath),
+        href: post.filePath.replace(this.#cfg.blogDir, "").replace(/\.mdx?$/, ""),
+        preview: frontmatter?.preview,
+        tags: frontmatter?.tags,
+        author: frontmatter?.author ?? this.#cfg.author,
         date: dateOrBirth ? new Date(dateOrBirth) : undefined,
         frontmatter,
-      };
-    });
+      });
+      // Inside the for loop we return early if we hit our post limit before iterating all of them
+      if (mostRecentPosts.length >= limit) {
+        return mostRecentPosts;
+      }
+    }
+    return mostRecentPosts;
   }
 
   async serve() {
@@ -201,12 +246,23 @@ export class Blog {
       if (req.method !== "GET") {
         return new Response(null, { status: 404 });
       }
+
+      console.log("Req", req.url);
+
       const { pathname } = new URL(req.url);
       if (pathname === "/favicon.ico") {
         return new Response(null, { status: 204 });
       }
       if (pathname === "/") {
         return new Response(await this.renderIndex(), {
+          headers: { "content-type": "text/html" },
+          status: 200,
+        });
+      }
+      if (pathname.startsWith("/tags/")) {
+        const tags = pathname.replace("/tags/", "").split(",");
+        console.log("Filtering on tags", tags);
+        return new Response(await this.renderIndex({ tags }), {
           headers: { "content-type": "text/html" },
           status: 200,
         });

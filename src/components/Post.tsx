@@ -1,4 +1,3 @@
-/** @jsx h */
 import { h } from "../../deps.ts";
 import { PostFrontmatter } from "../types.ts";
 import Author from "./Author.tsx";

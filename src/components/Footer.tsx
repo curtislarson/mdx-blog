@@ -1,4 +1,3 @@
-/** @jsx h */
 import { h } from "../../deps.ts";
 
 export default function c() {

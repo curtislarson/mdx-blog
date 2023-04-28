@@ -1,4 +1,3 @@
-/** @jsx h */
 import { h } from "../../deps.ts";
 import CalendarIcon from "./icons/Calendar.tsx";
 

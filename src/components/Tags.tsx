@@ -1,5 +1,3 @@
-/** @jsx h */
-import { h } from "../../deps.ts";
 import TagIcon from "./icons/Tag.tsx";
 
 export interface TagsProps {
@@ -11,9 +9,11 @@ export default function Tags({ tags }: TagsProps) {
     <div class="text-accent items-center flex flex-row">
       <TagIcon />
       {tags.map((tag, idx) => (
-        <div key={tag} class={`badge badge-sm badge-accent badge-outline ${idx !== 0 ? "ml-2" : "ml-1"}`}>
-          {tag}
-        </div>
+        <a href={`/tags/${tag}`}>
+          <div key={tag} class={`badge badge-sm badge-accent badge-outline ${idx !== 0 ? "ml-2" : "ml-1"}`}>
+            {tag}
+          </div>
+        </a>
       ))}
     </div>
   );

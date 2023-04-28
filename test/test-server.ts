@@ -6,7 +6,7 @@ const root = new URL("./test-website", import.meta.url).pathname;
 
 await new Blog({
   root,
-  index: { title: "blog", description: "Unprompted thoughts" },
+  index: { title: "blog", description: "Test Blog Please Ignore" },
   css: { theme: "dracula" },
   author: "Curtis Larson",
 }).serve();

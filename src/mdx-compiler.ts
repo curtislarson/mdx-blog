@@ -1,4 +1,4 @@
-import { basename, join, mdx, MDXContent, preactRuntime } from "../deps.ts";
+import { basename, ComponentType, join, mdx, MDXContent, preactRuntime } from "../deps.ts";
 import { MDXConfig } from "./config.ts";
 
 export interface MDXCompilerOptions {
@@ -37,7 +37,7 @@ export class MDXCompiler {
     const outPath = join(this.#outDir, originalName.replace(/\.mdx?$/, ".jsx"));
     const content = Deno.readTextFileSync(sourcePath);
     const compiled = mdx.compileSync(content, { ...this.#config, jsx: true });
-    Deno.writeTextFileSync(outPath, compiled.value);
+    Deno.writeTextFileSync(outPath, compiled.value as string);
     this.#tempFileCache.set(sourcePath, outPath);
 
     return outPath;
@@ -47,7 +47,7 @@ export class MDXCompiler {
     const existing = this.#memoryCache.get(sourcePath);
     if (existing != null) {
       console.log("Path exists in memory cache: ", sourcePath);
-      return existing;
+      return existing as unknown as ComponentType;
     }
 
     data ??= await Deno.readTextFile(sourcePath);
@@ -57,7 +57,7 @@ export class MDXCompiler {
     });
 
     this.#memoryCache.set(sourcePath, MDXContent);
-    return MDXContent;
+    return MDXContent as unknown as ComponentType;
   }
 
   evaluateSync(sourcePath: string, data?: string) {

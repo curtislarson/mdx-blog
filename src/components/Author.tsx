@@ -1,5 +1,3 @@
-/** @jsx h */
-import { h } from "../../deps.ts";
 import UserIcon from "./icons/User.tsx";
 
 export interface AuthorProps {

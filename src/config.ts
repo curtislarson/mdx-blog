@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import {
   JSX,
   Pluggable,
@@ -33,6 +34,12 @@ export interface IndexConfig {
   avatar?: string;
   title?: string;
   description?: string;
+  /**
+   * The number of posts to display on the index page.
+   *
+   * @default 5
+   */
+  postLimit?: number;
 }
 
 export interface ServerConfig extends Omit<ServeDirOptions, "fsRoot"> {}

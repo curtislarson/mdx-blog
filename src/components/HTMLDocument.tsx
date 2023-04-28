@@ -1,14 +1,13 @@
-/** @jsx h  */
-import { h } from "../deps.ts";
-import { HtmlConfig, HtmlConfigStyles } from "./config.ts";
+import { h } from "../../deps.ts";
+import { HtmlConfig, HtmlConfigStyles } from "../config.ts";
 
-export interface HtmlProps extends HtmlConfig {
+export interface HTMLDocumentProps extends HtmlConfig {
   theme?: string;
   body: string;
   styles: HtmlConfigStyles;
 }
 
-export default function Html({ body, theme, title, styles, links, meta }: HtmlProps) {
+export default function HTMLDocument({ body, theme, title, styles, links, meta }: HTMLDocumentProps) {
   return (
     <html lang="en" data-theme={theme}>
       <head>

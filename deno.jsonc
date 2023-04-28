@@ -4,8 +4,9 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "strict": true,
+    "jsx": "react-jsx",
     "jsxFragmentFactory": "h",
-    "jsxImportSource": "preact",
+    "jsxImportSource": "https://esm.quack.id/preact",
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
@@ -19,5 +20,9 @@
     "start": "deno task watch",
     "build": "deno run -A --unstable --no-check ./test/test-build.ts",
     "watch": "deno run -A --unstable --no-check --watch ./test/test-server.ts"
+  },
+  "imports": {
+    "preact/jsx-runtime": "https://esm.quack.id/preact@10.13.2/jsx-runtime",
+    "preact-render-to-string": "https://esm.quack.id/preact-render-to-string@6.0.2?external=preact"
   }
 }
