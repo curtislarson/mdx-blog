@@ -1,9 +1,5 @@
 // Modified from https://github.com/ije/html/blob/main/plugins/unocss.ts
-import type { Preset, UserConfig } from "https://esm.quack.id/@unocss/core@0.49.0";
-import { UnoGenerator } from "https://esm.quack.id/@unocss/core@0.49.0";
-import presetTypeography from "https://esm.quack.id/@unocss/preset-typography@0.49.0?bundle";
-import presetUno from "https://esm.quack.id/@unocss/preset-uno@0.49.0?bundle";
-import { PurgeCSS } from "https://esm.quack.id/purgecss@5.0.0";
+import { Preset, PurgeCSS, UnoGenerator, UserConfig, presetTypeography, presetUno } from "../deps.ts";
 import { decompressFromBase64 } from "./assets/compress.ts";
 import { DAISYUI_BASE64 } from "./assets/daisyui-base64.ts";
 import { UNO_RESET_CSS } from "./assets/reset-css.ts";
