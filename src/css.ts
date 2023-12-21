@@ -1,13 +1,17 @@
 // Modified from https://github.com/ije/html/blob/main/plugins/unocss.ts
-import { Preset, PurgeCSS, UnoGenerator, UserConfig, presetTypeography, presetUno } from "../deps.ts";
+import {
+  Preset,
+  presetTypeography,
+  presetUno,
+  PurgeCSS,
+  UnoGenerator,
+  UserConfig,
+} from "../deps.ts";
 import { decompressFromBase64 } from "./assets/compress.ts";
 import { DAISYUI_BASE64 } from "./assets/daisyui-base64.ts";
 import { UNO_RESET_CSS } from "./assets/reset-css.ts";
 
-export interface CSSConfig extends UserConfig {
-  /** DaisyUI theme */
-  theme?: string;
-}
+export type CSSConfig = UserConfig;
 
 export function createCSSPurger() {
   const purgecss = new PurgeCSS();

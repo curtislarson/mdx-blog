@@ -1,5 +1,4 @@
-import type { MdxjsEsm } from "https://esm.quack.id/mdast-util-mdx@2.0.0";
-import { join } from "../../deps.ts";
+import { join, MdxjsEsm } from "../../deps.ts";
 import { MDXCompiler } from "../mdx-compiler.ts";
 import type { Content, ImportDeclaration, Plugin, Root } from "./types.ts";
 
@@ -18,7 +17,10 @@ type RootWithMdxContent = Omit<Root, "children"> & {
  * find any `mdx` imports, compile them to a temporary file, and replace the import with the one for
  * the temporary file.
  */
-const remarkCompileMdxImports: Plugin<[CompileMdxImportsOptions], RootWithMdxContent> = (options) => {
+const remarkCompileMdxImports: Plugin<
+  [CompileMdxImportsOptions],
+  RootWithMdxContent
+> = (options) => {
   const { compiler } = options;
 
   function compileImportDeclaration(decl: ImportDeclaration) {
@@ -37,9 +39,9 @@ const remarkCompileMdxImports: Plugin<[CompileMdxImportsOptions], RootWithMdxCon
       if (node.type !== "mdxjsEsm" || node.data?.estree?.body == null) {
         continue;
       }
-      node.data.estree.body.filter((d): d is ImportDeclaration => d.type === "ImportDeclaration").forEach((decl) =>
-        compileImportDeclaration(decl)
-      );
+      node.data.estree.body.filter((d): d is ImportDeclaration =>
+        d.type === "ImportDeclaration"
+      ).forEach((decl) => compileImportDeclaration(decl));
     }
   };
 };
