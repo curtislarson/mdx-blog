@@ -11,7 +11,12 @@ import { decompressFromBase64 } from "./assets/compress.ts";
 import { DAISYUI_BASE64 } from "./assets/daisyui-base64.ts";
 import { UNO_RESET_CSS } from "./assets/reset-css.ts";
 
-export type CSSConfig = UserConfig;
+/**
+ * TODO(@curtislarson): This is kind of a hack but it keeps the string theme working. Otherwise there are type errors
+ */
+export type CSSConfig = Omit<UserConfig, "theme"> & {
+  theme?: string;
+};
 
 export function createCSSPurger() {
   const purgecss = new PurgeCSS();
