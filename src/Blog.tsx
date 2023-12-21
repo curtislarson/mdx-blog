@@ -1,5 +1,5 @@
 import Post from "./components/Post.tsx";
-import { ensureDir, frontmatter, serve, walkSync, basename, join, h, dirname, renderToString } from "../deps.ts";
+import { basename, debug, dirname, ensureDir, frontmatter, h, join, renderToString, serve, walkSync } from "../deps.ts";
 import { createCSSProcessor } from "./css.ts";
 import {
   BlogConfig,
@@ -24,6 +24,8 @@ export interface GetPostsArgs {
   filter?: RenderIndexFilter;
 }
 
+const log = debug("@quackware/mdx-static:Blog");
+
 export class Blog {
   readonly #pathCfg;
   readonly #cfg;
@@ -33,7 +35,7 @@ export class Blog {
   #manifest;
 
   constructor(config: BlogConfig) {
-    console.log("Init Config", JSON.stringify(config, null, 2));
+    log("Init Config", JSON.stringify(config, null, 2));
     this.#pathCfg = createPathConfig(config);
     const mdxConfig = createMDXConfig(config.mdx);
     this.#cfg = createBlogConfig(config, this.#pathCfg, mdxConfig);
@@ -48,13 +50,13 @@ export class Blog {
     }
     const compiler = installCompileMdxImportsPlugin(this.#cfg.mdx, this.#pathCfg);
 
-    console.log(`Collected ${this.#manifest.length} files`);
+    log(`Collected ${this.#manifest.length} files`);
 
     /**
      * TODO: Don't build all the files here
      */
     const result = await Promise.all(
-      this.#manifest.map(({ filePath }) => this.renderAndWriteToFile(filePath, compiler))
+      this.#manifest.map(({ filePath }) => this.renderAndWriteToFile(filePath, compiler)),
     );
 
     const [okBuilds, badBuilds] = result.reduce<[string[], string[]]>(
@@ -66,11 +68,11 @@ export class Blog {
         }
         return acc;
       },
-      [[], []]
+      [[], []],
     );
 
-    console.log(`# OK: ${okBuilds.length}`);
-    console.log(`# BAD: ${badBuilds.length}`);
+    log(`# OK: ${okBuilds.length}`);
+    log(`# BAD: ${badBuilds.length}`);
   }
 
   /**
@@ -78,7 +80,10 @@ export class Blog {
    */
   refreshManifest(): ManifestEntry[] {
     const manifest: ManifestEntry[] = [];
-    for (const entry of walkSync(this.#cfg.blogDir, { exts: [".md", ".mdx"], includeDirs: false })) {
+    for (const entry of walkSync(this.#cfg.blogDir, {
+      exts: [".md", ".mdx"],
+      includeDirs: false,
+    })) {
       const stat = Deno.statSync(entry.path);
       manifest.push({ stat, filePath: entry.path });
     }
@@ -126,13 +131,13 @@ export class Blog {
           theme={this.#cfg.css?.theme}
         >
           <MDXContent />
-        </PostComponent>
+        </PostComponent>,
       );
       const css = await this.#css.generate(body);
       const purged = await this.#css.purge(body, css);
       return this.#renderHtml(body, purged);
     } catch (e) {
-      console.error("Error in renderFile", e);
+      log("ERR:", "Error in renderFile", e);
       throw e;
     }
   }
@@ -140,16 +145,15 @@ export class Blog {
   async renderAndWriteToFile(filePath: string, compiler: MDXCompiler) {
     try {
       const html = await this.renderFile(filePath, compiler);
-
       const outFilePath = join(this.#cfg.build.outDir, basename(filePath).replace(/\.mdx?$/, ".html"));
       await ensureDir(dirname(outFilePath));
       await Deno.writeTextFile(outFilePath, `<!DOCTYPE html>${html}`);
 
-      console.log(`OK: ${outFilePath}`);
+      log(`OK: ${outFilePath}`);
 
       return { ok: true as const, outFilePath };
     } catch (e) {
-      console.error(e);
+      log("ERR:", e);
       return { ok: false as const, filePath };
     }
   }
@@ -169,7 +173,7 @@ export class Blog {
         theme={this.#cfg.css?.theme}
         posts={mostRecent}
         tags={filter.tags}
-      />
+      />,
     );
     const css = await this.#css.generate(body);
     const purged = await this.#css.purge(body, css);
@@ -185,7 +189,7 @@ export class Blog {
         theme={this.#cfg.css?.theme}
         body={body}
         styles={(this.#cfg.html?.styles ?? []).concat(purgedCss.map((p) => p.css))}
-      />
+      />,
     );
   }
 
@@ -247,7 +251,7 @@ export class Blog {
         return new Response(null, { status: 404 });
       }
 
-      console.log("Req", req.url);
+      log("Req", req.url);
 
       const { pathname } = new URL(req.url);
       if (pathname === "/favicon.ico") {
@@ -261,14 +265,14 @@ export class Blog {
       }
       if (pathname.startsWith("/tags/")) {
         const tags = pathname.replace("/tags/", "").split(",");
-        console.log("Filtering on tags", tags);
+        log("Filtering on tags", tags);
         return new Response(await this.renderIndex({ tags }), {
           headers: { "content-type": "text/html" },
           status: 200,
         });
       }
       const filePath = join(this.#cfg.blogDir, pathname);
-      console.log("GET", filePath);
+      log("GET", filePath);
       const searchPaths = [`${filePath}.mdx`, `${filePath}.md`];
       for (const path of searchPaths) {
         try {
@@ -277,7 +281,8 @@ export class Blog {
             headers: { "content-type": "text/html" },
             status: 200,
           });
-        } catch {
+        } catch (e) {
+          log("failed with", e);
           // empty
         }
       }

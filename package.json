@@ -1,0 +1,6 @@
+{
+  "name": "@quackware/mdx-static",
+  "devDependencies": {
+    "prettier": "^3.1.1"
+  }
+}
