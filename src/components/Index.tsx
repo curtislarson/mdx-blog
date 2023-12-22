@@ -5,7 +5,7 @@ import IndexHeader from "./IndexHeader.tsx";
 
 export interface IndexProps extends IndexConfig {
   posts: PostCardProps[];
-  theme?: string;
+  theme?: string | object;
   tags?: string[];
 }
 

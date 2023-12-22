@@ -6,7 +6,7 @@
     "strict": true,
     "jsx": "react-jsx",
     "jsxFragmentFactory": "h",
-    "jsxImportSource": "https://esm.quack.id/preact",
+    "jsxImportSource": "https://esm.quack.id/preact@10.19.3",
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,

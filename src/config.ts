@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import {
   JSX,
-  Plugin,
+  Pluggable,
   preactRuntime,
   remarkFrontmatter,
   remarkGFM,
@@ -14,8 +14,7 @@ import { MDXCompiler } from "./mdx-compiler.ts";
 import remarkCompileMdxImports from "./remark-plugins/remark-compile-mdx-imports.ts";
 import { createShikiConfig, ShikiConfig } from "./shiki.ts";
 
-export type HtmlConfigStyles =
-  (string | { href?: string; text?: string; id?: string })[];
+export type HtmlConfigStyles = (string | { href?: string; text?: string; id?: string })[];
 
 /** Configuration for customizing the base html template */
 export interface HtmlConfig {
@@ -43,6 +42,7 @@ export interface IndexConfig {
   postLimit?: number;
 }
 
+// deno-lint-ignore no-empty-interface
 export interface ServerConfig extends Omit<ServeDirOptions, "fsRoot"> {}
 
 export interface BuildConfig {
@@ -57,14 +57,14 @@ export interface MDXConfig {
   Fragment?: typeof preactRuntime["Fragment"];
   providerImportSource?: string;
   jsxImportSource?: string;
-  remarkPlugins?: Plugin<any>[];
-  rehypePlugins?: Plugin<any>[];
+  remarkPlugins?: Pluggable[];
+  rehypePlugins?: Pluggable[];
 }
 
 export const DEFAULT_MDX_CONFIG = {
   useDynamicImport: true,
-  providerImportSource: "https://esm.quack.id/@mdx-js/preact@2.3.0",
-  jsxImportSource: "https://esm.quack.id/preact@10.13.2",
+  providerImportSource: "https://esm.quack.id/@mdx-js/preact@3.0.0",
+  jsxImportSource: "https://esm.quack.id/preact@10.19.3",
   remarkPlugins: [remarkFrontmatter as any, remarkMdxFrontmatter, remarkGFM],
   rehypePlugins: [],
 };

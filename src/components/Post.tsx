@@ -5,6 +5,7 @@ import PrettyDate from "./PrettyDate.tsx";
 import Tags from "./Tags.tsx";
 
 export interface PostProps extends PostFrontmatter {
+  // deno-lint-ignore no-explicit-any
   children: any;
 }
 

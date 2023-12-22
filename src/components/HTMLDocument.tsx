@@ -2,7 +2,7 @@ import { h } from "../../deps.ts";
 import { HtmlConfig, HtmlConfigStyles } from "../config.ts";
 
 export interface HTMLDocumentProps extends HtmlConfig {
-  theme?: string;
+  theme?: string | object;
   body: string;
   styles: HtmlConfigStyles;
 }
@@ -22,7 +22,7 @@ export default function HTMLDocument({ body, theme, title, styles, links, meta }
                 <meta property={name} content={String(content)} />
               ) : (
                 <meta name={name} content={String(content)} />
-              )
+              ),
             )}
         {links && links.map(({ rel, href, ...rest }) => <link rel={rel} href={href} {...rest} />)}
         {styles.map((s) =>
@@ -35,7 +35,7 @@ export default function HTMLDocument({ body, theme, title, styles, links, meta }
               href={s.href}
               dangerouslySetInnerHTML={s.text ? { __html: s.text } : undefined}
             />
-          )
+          ),
         )}
       </head>
 

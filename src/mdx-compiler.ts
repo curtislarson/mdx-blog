@@ -54,7 +54,7 @@ export class MDXCompiler {
     const { default: MDXContent } = await mdx.evaluate(data, {
       ...preactRuntime,
       ...this.#config,
-    });
+    } as unknown as Readonly<mdx.EvaluateOptions>);
 
     this.#memoryCache.set(sourcePath, MDXContent);
     return MDXContent as unknown as ComponentType;
@@ -71,7 +71,7 @@ export class MDXCompiler {
     const { default: MDXContent } = mdx.evaluateSync(data, {
       ...preactRuntime,
       ...this.#config,
-    });
+    } as unknown as Readonly<mdx.EvaluateOptions>);
     this.#memoryCache.set(sourcePath, MDXContent);
 
     return MDXContent;

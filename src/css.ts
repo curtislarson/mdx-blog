@@ -1,21 +1,11 @@
 // Modified from https://github.com/ije/html/blob/main/plugins/unocss.ts
-import {
-  Preset,
-  presetTypeography,
-  presetUno,
-  PurgeCSS,
-  UnoGenerator,
-  UserConfig,
-} from "../deps.ts";
+import { Preset, presetTypeography, presetUno, PurgeCSS, UnoGenerator, UserConfig } from "../deps.ts";
 import { decompressFromBase64 } from "./assets/compress.ts";
 import { DAISYUI_BASE64 } from "./assets/daisyui-base64.ts";
 import { UNO_RESET_CSS } from "./assets/reset-css.ts";
 
-/**
- * TODO(@curtislarson): This is kind of a hack but it keeps the string theme working. Otherwise there are type errors
- */
 export type CSSConfig = Omit<UserConfig, "theme"> & {
-  theme?: string;
+  theme?: string | object;
 };
 
 export function createCSSPurger() {
@@ -28,7 +18,12 @@ export function createCSSPurger() {
   };
 }
 
-export function createCSSProcessor(config?: UserConfig) {
+export function createCSSProcessor(config?: CSSConfig) {
+  /**
+   * UnoGenerator expects `theme` as an object but it also works as a `string`
+   */
+  // deno-lint-ignore ban-ts-comment
+  // @ts-ignore
   const uno = new UnoGenerator({
     presets: [
       presetUno(),
