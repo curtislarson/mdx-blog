@@ -1,5 +1,18 @@
 import Post from "./components/Post.tsx";
-import { basename, debug, dirname, ensureDir, frontmatter, h, join, renderToString, serve, walkSync } from "../deps.ts";
+import {
+  basename,
+  debug,
+  dirname,
+  ensureDir,
+  frontmatter,
+  h,
+  join,
+  renderToString,
+  serve,
+  walkSync,
+  extname,
+  contentType,
+} from "../deps.ts";
 import { createCSSProcessor } from "./css.ts";
 import {
   BlogConfig,
@@ -181,7 +194,7 @@ export class Blog {
   }
 
   #renderHtml(body: string, purgedCss: { css: string }[]) {
-    return renderToString(
+    const html = renderToString(
       <HTMLDocument
         title={this.#cfg.html?.title}
         links={this.#cfg.html?.links}
@@ -191,6 +204,7 @@ export class Blog {
         styles={(this.#cfg.html?.styles ?? []).concat(purgedCss.map((p) => p.css))}
       />,
     );
+    return `<!DOCTYPE html>${html}`;
   }
 
   /**
@@ -254,6 +268,7 @@ export class Blog {
       log("Req", req.url);
 
       const { pathname } = new URL(req.url);
+      const extension = extname(pathname);
       if (pathname === "/favicon.ico") {
         return new Response(null, { status: 204 });
       }
@@ -273,6 +288,17 @@ export class Blog {
       }
       const filePath = join(this.#cfg.blogDir, pathname);
       log("GET", filePath);
+
+      // Serve any files we know the content type for
+      const fileContentType = contentType(extension);
+      if (fileContentType) {
+        const file = await Deno.readFile(filePath);
+        return new Response(file, {
+          headers: { "Content-Type": fileContentType },
+        });
+      }
+
+      // Search for mdx or md files that we need to render (this is the case if they dont provide extension name)
       const searchPaths = [`${filePath}.mdx`, `${filePath}.md`];
       for (const path of searchPaths) {
         try {
@@ -286,6 +312,7 @@ export class Blog {
           // empty
         }
       }
+
       return new Response(null, {
         status: 404,
       });

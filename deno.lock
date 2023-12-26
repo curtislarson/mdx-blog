@@ -1,6 +1,28 @@
 {
   "version": "3",
+  "packages": {
+    "specifiers": {
+      "npm:@types/node": "npm:@types/node@18.16.19"
+    },
+    "npm": {
+      "@types/node@18.16.19": {
+        "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
+        "dependencies": {}
+      }
+    }
+  },
   "redirects": {
+    "http://esm.quack.id/v135/@types/hast@3.0.3/index.d.ts": "https://esm.quack.id/v135/@types/hast@3.0.3/index.d.ts",
+    "http://esm.quack.id/v135/@types/mdast@4.0.3/index.d.ts": "https://esm.quack.id/v135/@types/mdast@4.0.3/index.d.ts",
+    "http://esm.quack.id/v135/@types/unist@3.0.2/index.d.ts": "https://esm.quack.id/v135/@types/unist@3.0.2/index.d.ts",
+    "http://esm.quack.id/v135/hast-util-raw@9.0.1/index.d.ts": "https://esm.quack.id/v135/hast-util-raw@9.0.1/index.d.ts",
+    "http://esm.quack.id/v135/mdast-util-to-hast@13.0.2/index.d.ts": "https://esm.quack.id/v135/mdast-util-to-hast@13.0.2/index.d.ts",
+    "http://esm.quack.id/v135/parse5@7.1.2/dist/index.d.ts": "https://esm.quack.id/v135/parse5@7.1.2/dist/index.d.ts",
+    "http://esm.quack.id/v135/rehype-raw@7.0.0/index.d.ts": "https://esm.quack.id/v135/rehype-raw@7.0.0/index.d.ts",
+    "http://esm.quack.id/v135/shiki-es@0.14.0/dist/shiki.d.ts": "https://esm.quack.id/v135/shiki-es@0.14.0/dist/shiki.d.ts",
+    "http://esm.quack.id/v135/vfile-message@4.0.2/index.d.ts": "https://esm.quack.id/v135/vfile-message@4.0.2/index.d.ts",
+    "http://esm.quack.id/v135/vfile@6.0.1/index.d.ts": "https://esm.quack.id/v135/vfile@6.0.1/index.d.ts",
+    "http://esm.quack.id/v135/vscode-textmate@9.0.0/release/main.d.ts": "https://esm.quack.id/v135/vscode-textmate@9.0.0/release/main.d.ts",
     "https://esm.quack.id/preact/jsx-runtime": "https://esm.quack.id/preact@10.19.3/jsx-runtime",
     "https://git.quack.id/logger/debug.ts": "https://raw.githubusercontent.com/quackware/logger/master/debug.ts"
   },
